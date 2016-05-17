@@ -1,0 +1,32 @@
+.fame-builder * {
+    box-sizing: border-box;
+}
+.fame-builder {
+    border: 1px solid #dddddd;
+}
+.fame-builder-toolbar {
+    padding: 8px;
+    border-bottom: 1px solid #dddddd;
+}
+.fame-builder-btn {
+    padding: 5px;
+    border: 1px solid #333333;
+    display: inline-block;
+    border-radius: 3px;
+    cursor: pointer;
+}
+.fame-builder-btn span {
+    font-size: 20px;
+    line-height: 26px;
+    text-align: center;
+    display: inline-block;
+}
+.fame-builder-btn span.dashicons:before {
+    height: 26px;
+}
+
+.fame-builder-area {
+    min-height: 150px;
+    display: block;
+    background: #ffffff;
+}
