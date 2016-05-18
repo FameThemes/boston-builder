@@ -2,9 +2,47 @@
  * Created by truongsa on 5/17/16.
  */
 
+/*!
+ * jQuery serializeObject - v0.2 - 1/20/2010
+ * http://benalman.com/projects/jquery-misc-plugins/
+ *
+ * Copyright (c) 2010 "Cowboy" Ben Alman
+ * Dual licensed under the MIT and GPL licenses.
+ * http://benalman.com/about/license/
+ */
+
+// Whereas .serializeArray() serializes a form into an array, .serializeObject()
+// serializes a form into an (arguably more useful) object.
+
+(function($,undefined){
+    '$:nomunge'; // Used by YUI compressor.
+
+    $.fn.serializeObject = function(){
+        var obj = {};
+
+        $.each( this.serializeArray(), function(i,o){
+            var n = o.name,
+                v = o.value;
+
+            obj[n] = obj[n] === undefined ? v
+                : $.isArray( obj[n] ) ? obj[n].concat( v )
+                : [ obj[n], v ];
+        });
+
+        return obj;
+    };
+
+})(jQuery);
+
+
+
 jQuery( document ).ready( function ( $ ) {
     
-
+    var body = $( 'body' ),
+        fame_editing_item = false,
+        fame_editing_col = false,
+        fame_editing_row = false;
+        fame_editing_item_type = '';
 
     // Loaf view style
     /*
@@ -25,33 +63,36 @@ jQuery( document ).ready( function ( $ ) {
 
     // Fixed toolbar
 
-    var toolbar = $( '.fame-builder-toolbar' );
-    toolbar.wrap( '<div class="fame-builder-toolbar-wrap"></div>' );
-    var toolbar_wrap = toolbar.parent();
-    toolbar_wrap.height( toolbar.outerHeight() );
-    var tw = toolbar_wrap.width();
-    console.log( tw );
-    toolbar.css( { width:  tw+'px' } );
-    $( window ).resize( function(){
+    function set_toolbar(){
+        var toolbar = $( '.fame-builder-toolbar' );
+        toolbar.wrap( '<div class="fame-builder-toolbar-wrap"></div>' );
+        var toolbar_wrap = toolbar.parent();
+        toolbar_wrap.height( toolbar.outerHeight() );
         var tw = toolbar_wrap.width();
+        console.log( tw );
         toolbar.css( { width:  tw+'px' } );
-    } );
-    $( window ).scroll( function(){
-        var st = $( window ) .scrollTop();
-        var l = toolbar_wrap.offset().left;
-        var t = 0;
-        if ( $( '#wpadminbar' ).css( 'position' ) === 'fixed' ) {
-            t = $( '#wpadminbar' ).height();
-        }
-        if ( st > toolbar_wrap.offset().top - t ) {
-            toolbar_wrap.addClass( 'fame-fixed' );
-            toolbar.css( { top:  t+'px' } );
-        } else {
-            toolbar_wrap.removeClass( 'fame-fixed' );
-            toolbar.css( { top:  'auto' } );
-        }
-        //toolbar.css( { top: t, left: l, position: 'fixed' });
-    } );
+        $( window ).resize( function(){
+            var tw = toolbar_wrap.width();
+            toolbar.css( { width:  tw+'px' } );
+        } );
+        $( window ).scroll( function(){
+            var st = $( window ) .scrollTop();
+            var l = toolbar_wrap.offset().left;
+            var t = 0;
+            if ( $( '#wpadminbar' ).css( 'position' ) === 'fixed' ) {
+                t = $( '#wpadminbar' ).height();
+            }
+            if ( st > toolbar_wrap.offset().top - t ) {
+                toolbar_wrap.addClass( 'fame-fixed' );
+                toolbar.css( { top:  t+'px' } );
+            } else {
+                toolbar_wrap.removeClass( 'fame-fixed' );
+                toolbar.css( { top:  'auto' } );
+            }
+            //toolbar.css( { top: t, left: l, position: 'fixed' });
+        } );
+    }
+    set_toolbar();
 
     function get_template( tmpl_id, data ){
         if ( typeof data === "undefined" ) {
@@ -181,6 +222,15 @@ jQuery( document ).ready( function ( $ ) {
     }
     sort_columns();
 
+    // When remove row
+    body.on( 'click', '.fame-block-row .fame-row-remove', function( e ) {
+        e.preventDefault();
+        $( this ).closest( '.fame-block-row ' ).remove();
+        update_data();
+    } );
+
+
+
     // Test
     $( 'body' ).on( 'click', '.new-item', function(e ){
         e.preventDefault();
@@ -188,7 +238,6 @@ jQuery( document ).ready( function ( $ ) {
         $( '.fame-builder-area ' ).append( r );
 
         sort_columns( r );
-
     } );
 
 
@@ -267,28 +316,38 @@ jQuery( document ).ready( function ( $ ) {
      * EN Input fields -----------------------------------------------
      */
 
+    function set_modal_size( modal ){
+        var set_pos = function(){
+            var w = $( window ).width();
+            var h = $( window ).height();
+            var cl = $( '#wpcontent' ).offset().left;
+            var mw = 600;
+            var mh = 600;
+            if (  mw > w ) {
+                mw = w;
+            }
+            if (  mh > h - 100 ) {
+                mh = h - 100;
+            }
+            var ml = ( w - mw ) / 2;
+            var mt = ( h - mh ) / 2;
+            modal.css( { left: ml , width: mw,  height: mh, top: mt } );
+        };
 
+        set_pos();
+        $( window ).resize( function(){
+            set_pos();
+        } );
+
+    }
     // Modal
     function modal (){
         var modal = get_template( 'fame-builder-modal-tpl', {} );
         modal = $( modal );
         $( 'body' ).append( modal );
-        var w = $( window ).width();
-        var h = $( window ).height();
-        var cl = $( '#wpcontent' ).offset().left;
-        var mw = 500;
-        var mh = 500;
-        if (  mw > w ) {
-            mw = w;
-        }
-        if (  mh > h - 100 ) {
-            mh = h - 100;
-        }
-        var ml = ( w - mw ) / 2;
-        var mt = ( h - mh ) / 2;
-        modal.css( { left: ml, width: mw,  height: mh, top: mt } );
-        var containment = $( '#wpcontent' ).length > 0 ? '#wpcontent' : false;
+
         /*
+         var containment = $( '#wpcontent' ).length > 0 ? '#wpcontent' : false;
          modal.draggable( {
          handle: '.fame-modal-header',
          containment: containment,
@@ -296,23 +355,98 @@ jQuery( document ).ready( function ( $ ) {
          minWidth: 150
          });
          */
+        input_fields( modal );
+    }
 
+    function setup_fields_data( fields, data_save ){
+        if ( typeof data_save !== "object" ) {
+            data_save = {};
+        }
+        var is_empty_data = $.isEmptyObject( data_save );
+
+        $.each( fields, function( index, field ){
+            fields[ index ] = $.extend( {}, {
+                id: '',
+                default: '',
+                value: '',
+            }, field );
+            if ( is_empty_data ) {
+                fields[ index ].value = fields[ index ].default;
+            } else {
+                if ( typeof data_save[ field.id ] !== "undefined" ) {
+                    fields[ index ].value = data_save[ field.id ];
+                }
+            }
+
+        } );
+        return fields;
+    }
+
+    function open_modal( data, fields ){
+        data.html = get_template( 'fame-builder-fields-tpl', fields );
+        var modal = get_template( 'fame-builder-modal-tpl', data );
+        modal = $( modal );
+        $( '.fame-modal-drop' ).remove();
+        $( 'body' ).append( '<div class="fame-modal-drop"></div>' );
+        $( 'body' ).append( modal );
+        set_modal_size( modal );
         input_fields( modal );
     }
 
     // Close modal
-    $( 'body' ).on( 'click', '.fame-modal .fame-modal-remove', function( e){
-        e.preventDefault();
+    function remove_modal(){
+        $('.fame-modal' ).remove();
+        $( '.fame-modal-drop' ).remove();
         $( this ).closest( '.fame-modal' ).remove();
+    }
+    body.on( 'click', '.fame-modal .fame-modal-remove', function( e){
+        e.preventDefault();
+        remove_modal();
     } );
 
-    // Open modal
-    $( 'body' ).on( 'click', '.fame-block-settings', function( e){
+    // Row modal
+    body.on( 'click', '.fame-row-settings', function( e){
         e.preventDefault();
-        modal();
     } );
+
+    // Item modal
+    body.on( 'click', '.fame-block-item .fame-item-settings', function( e){
+        e.preventDefault();
+        var item_id = 'text';
+        var data = FAME_BUILDER.items[ item_id ] || {};
+        fame_editing_item = $( this ).closest( '.fame-block-item' );
+        open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
+    } );
+
+    // Column modal
+    body.on( 'click', '.fame-block-col .fame-col-settings', function( e){
+        e.preventDefault();
+        var data = FAME_BUILDER.col || {};
+        fame_editing_item = $( this ).closest( '.fame-block-col' );
+        open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
+    } );
+
+    // Row modal
+    body.on( 'click', '.fame-block-row .fame-row-settings', function( e){
+        e.preventDefault();
+        var data = FAME_BUILDER.row || {};
+        fame_editing_item = $( this ).closest( '.fame-block-row' );
+        open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
+    } );
+
+    // Modal save
+    body.on( 'click', '.fame-builder-save', function ( e ){
+        e.preventDefault();
+        var data = $( 'form.fame-modal-body-inner' ).serializeObject();
+        fame_editing_item.prop( 'builder_data', data );
+        remove_modal();
+        update_data();
+    } );
+
 
     // End modal
+
+
 
 
 
