@@ -7,6 +7,15 @@ class Fame_Builder {
         define( 'FAME_BUILDER_PATH', trailingslashit( dirname( __FILE__ ) ) );
         add_action( 'edit_form_after_title', array( $this, 'builder_interface' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'builder_css' ) );
+        add_action( 'admin_footer', array( $this, 'wp_editor_tpl' ) );
+    }
+
+    function wp_editor_tpl(){
+        ?>
+        <script id="_wp-mce-editor-tpl" type="text/html">
+            <?php  wp_editor('', '__wp_mce_editor__'); ?>
+        </script>
+        <?php
     }
 
     /**
@@ -37,14 +46,23 @@ class Fame_Builder {
     function builder_css( $hook ){
         if ( $hook == 'post.php' || $hook == 'post-new.php' ) {
             wp_enqueue_style( 'fame-builder', FAME_BUILDER_URL.'admin/assets/css/builder.css'  );
+            wp_enqueue_style( 'wp-color-picker' );
+            wp_enqueue_style( 'jquery-ui'  );
         }
     }
 
     function builder_interface( $post )
     {
         wp_enqueue_script( 'jquery' );
+        wp_enqueue_script( 'jquery-ui-core' );
+        wp_enqueue_script( 'jquery-ui-sortable' );
+        wp_enqueue_script( 'jquery-ui-resizable' );
+        wp_enqueue_script( 'jquery-ui-draggable' );
+        wp_enqueue_script( 'wp-color-picker' );
+
         wp_enqueue_media();
-        wp_enqueue_script( 'sortable' );
+
+        wp_enqueue_script( 'fame-editor', FAME_BUILDER_URL.'admin/assets/js/editor.js', array( 'jquery' ), false, true );
         wp_enqueue_script( 'fame-builder', FAME_BUILDER_URL.'admin/assets/js/builder.js', array( 'jquery' ), false, true );
 
         include dirname( __FILE__ ).'/admin/interface.php';

@@ -200,6 +200,7 @@
   clear: both;
 }
 .fame-toolbar div {
+  cursor: pointer;
   display: inline-block;
   background: #f5f5f5;
   width: 26px;
@@ -211,4 +212,235 @@
 
 .fame-col-toolbar {
   border: 1px solid #dddddd;
+}
+
+/* Modal */
+.fame-modal {
+  box-sizing: border-box;
+  width: 500px;
+  position: fixed !important;
+  z-index: 9999;
+  top: 300px;
+  left: 500px;
+  min-height: 200px;
+  display: block;
+  background: #ffffff;
+  border: 1px solid #dddddd;
+  -webkit-box-shadow: 2px 4px 11px 0px rgba(0, 0, 0, 0.57);
+  -moz-box-shadow: 2px 4px 11px 0px rgba(0, 0, 0, 0.57);
+  box-shadow: 2px 4px 11px 0px rgba(0, 0, 0, 0.57);
+}
+.fame-modal * {
+  box-sizing: border-box;
+}
+.fame-modal .fame-modal-header {
+  height: 40px;
+  line-height: 40px;
+  font-size: 20px;
+  padding: 0px 10px;
+  background: #f5f5f5;
+  border-bottom: 1px solid #dddddd;
+  padding-right: 40px;
+  width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: move;
+}
+.fame-modal .fame-modal-header .fame-modal-remove {
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  line-height: 40px;
+  text-align: center;
+  position: absolute;
+  top: 0px;
+  right: 0px;
+  cursor: pointer;
+}
+.fame-modal .fame-modal-header .fame-modal-remove:before {
+  font-family: "dashicons";
+  content: "\f335";
+}
+.fame-modal .fame-modal-footer {
+  background: #f5f5f5;
+  padding: 10px;
+  text-align: right;
+  position: absolute;
+  bottom: 0px;
+  left: 0px;
+  width: 100%;
+  display: block;
+  height: 50px;
+  display: block;
+}
+.fame-modal .fame-modal-body {
+  overflow: hidden;
+  top: 40px;
+  bottom: 50px;
+  left: 0px;
+  right: 0px;
+  position: absolute;
+}
+.fame-modal .fame-modal-body .fame-modal-body-inner {
+  overflow: auto;
+  height: 100%;
+  display: block;
+  width: 100%;
+  padding: 15px;
+}
+
+.fame-modal-item {
+  padding: 15px 0px;
+  border-bottom: 1px solid #dddddd;
+}
+.fame-modal-item:last-child {
+  border-bottom: 0px none;
+}
+.fame-modal-item:after {
+  content: " ";
+  display: block;
+  clear: both;
+}
+.fame-modal-item .fame-input {
+  float: right;
+}
+.fame-modal-item textarea.fame-input {
+  width: 100%;
+  float: none;
+  height: 150px;
+}
+.fame-modal-item .wp-picker-container {
+  float: right;
+}
+.fame-modal-item .wp-picker-container .wp-color-result::after {
+  line-height: 20px;
+}
+.fame-modal-item label span {
+  font-weight: bold;
+}
+.fame-modal-item .fame-desc {
+  clear: both;
+  padding-top: 5px;
+  font-style: italic;
+}
+.fame-modal-item .fame-media {
+  position: relative;
+}
+.fame-modal-item .fame-media-remove {
+  width: 30px;
+  top: 1px;
+  right: 1px;
+  height: 30px;
+  line-height: 30px;
+  font-size: 20px;
+  display: none;
+  text-align: center;
+  position: absolute;
+  background: #f5f5f5;
+  color: #e34113;
+}
+.fame-modal-item .fame-media-remove:before {
+  content: "\f335";
+  font-family: "dashicons";
+}
+.fame-modal-item .fame-media.added .fame-media-remove {
+  display: block;
+}
+.fame-modal-item .fame-media-preview {
+  background: #f5f5f5;
+  border: 1px solid #dddddd;
+  min-height: 180px;
+  width: 100%;
+  display: block;
+  text-align: center;
+  background-position: fixed;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+}
+
+/*  JQuery UI Resizeable */
+.ui-resizable {
+  position: relative;
+}
+
+.ui-resizable-handle {
+  position: absolute;
+  font-size: 0.1px;
+  display: block;
+  -ms-touch-action: none;
+  touch-action: none;
+}
+
+.ui-resizable-disabled .ui-resizable-handle,
+.ui-resizable-autohide .ui-resizable-handle {
+  display: none;
+}
+
+.ui-resizable-n {
+  cursor: n-resize;
+  height: 7px;
+  width: 100%;
+  top: -5px;
+  left: 0;
+}
+
+.ui-resizable-s {
+  cursor: s-resize;
+  height: 7px;
+  width: 100%;
+  bottom: -5px;
+  left: 0;
+}
+
+.ui-resizable-e {
+  cursor: e-resize;
+  width: 7px;
+  right: -5px;
+  top: 0;
+  height: 100%;
+}
+
+.ui-resizable-w {
+  cursor: w-resize;
+  width: 7px;
+  left: -5px;
+  top: 0;
+  height: 100%;
+}
+
+.ui-resizable-se {
+  cursor: se-resize;
+  width: 12px;
+  height: 12px;
+  right: 1px;
+  bottom: 1px;
+}
+
+.ui-resizable-sw {
+  cursor: sw-resize;
+  width: 9px;
+  height: 9px;
+  left: -5px;
+  bottom: -5px;
+}
+
+.ui-resizable-nw {
+  cursor: nw-resize;
+  width: 9px;
+  height: 9px;
+  left: -5px;
+  top: -5px;
+}
+
+.ui-resizable-ne {
+  cursor: ne-resize;
+  width: 9px;
+  height: 9px;
+  right: -5px;
+  top: -5px;
 }

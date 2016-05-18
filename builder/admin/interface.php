@@ -115,3 +115,121 @@
 
     </div><!-- fame-builder-area -->
 </div>
+
+
+
+
+
+
+<script type="text/html" id="fame-builder-modal-tpl">
+    <div class="fame-modal">
+        <div class="fame-modal-inner">
+            <div class="fame-modal-header"><span class="modal-heading">Modaltitle</span> <div class="fame-modal-remove"></div></div>
+            <div class="fame-modal-body">
+                <div class="fame-modal-body-inner">
+
+                    <div class="fame-modal-item">
+                        <label>
+                            <span>
+                                Input text
+                            </span>
+                            <input class="fame-input" type="text">
+                        </label>
+                        <div class="fame-desc">
+                            Contrary to popular belief, Lorem Ipsum is not simply random text
+                        </div>
+                    </div>
+
+                    <div class="fame-modal-item">
+                        <label>
+                            <span>
+                                Image
+                            </span>
+                            <div class="fame-media">
+                                <div class="fame-media-preview">
+
+                                </div>
+                                <div class="fame-media-remove"></div>
+                                <input class="fame-attachment-id" type="hidden">
+                                <input class="fame-attachment-url" type="hidden">
+                            </div>
+                        </label>
+                        <div class="fame-desc">
+                            Contrary to popular belief, Lorem Ipsum is not simply random text
+                        </div>
+                    </div>
+
+                    <div class="fame-modal-item">
+                        <label>
+                            <span>Input checkbox</span>
+                            <input class="fame-input" type="checkbox">
+                        </label>
+                        <div class="fame-desc">
+                            Contrary to popular belief, Lorem Ipsum is not simply random text
+                        </div>
+                    </div>
+
+                    <div class="fame-modal-item">
+                        <label>
+                            <span>Input select</span>
+                            <select class="fame-input" >
+                                <option>Option 1</option>
+                                <option>Option 1</option>
+                                <option>Option 1</option>
+                                <option>Option 1</option>
+                            </select>
+                        </label>
+                        <div class="fame-desc">
+                            Contrary to popular belief, Lorem Ipsum is not simply random text
+                        </div>
+                    </div>
+
+                    <div class="fame-modal-item">
+                        <label>
+                            <span>
+                                Input area
+                            </span>
+                            <textarea class="fame-input"></textarea>
+                        </label>
+                        <div class="fame-desc">
+                            Contrary to popular belief, Lorem Ipsum is not simply random text
+                        </div>
+                    </div>
+
+                    <div class="fame-modal-item">
+                        <label>
+                            <span>
+                                Editor
+                            </span>
+                            <textarea class="fame-input editor"></textarea>
+                        </label>
+                        <div class="fame-desc">
+                            Contrary to popular belief, Lorem Ipsum is not simply random text
+                        </div>
+                    </div>
+
+                    <div class="fame-modal-item">
+                        <label>
+                            <span>
+                                Input color
+                            </span>
+                            <input class="color-picker" type="text">
+                        </label>
+                        <div class="fame-desc">
+                            Contrary to popular belief, Lorem Ipsum is not simply random text
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </div>
+            <div class="fame-modal-footer">
+                <button class="save button button-primary button-large"><?php _e( 'Save', 'textdomain' ); ?></button>
+            </div>
+        </div>
+    </div>
+</script>
+<script type="text/html" id="fame-row-settings-tmpl">
+
+</script>
