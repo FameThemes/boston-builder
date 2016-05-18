@@ -6,6 +6,7 @@ class Fame_Builder {
         define( 'FAME_BUILDER_URL', self::get_url( __FILE__ ) );
         define( 'FAME_BUILDER_PATH', trailingslashit( dirname( __FILE__ ) ) );
         add_action( 'edit_form_after_title', array( $this, 'builder_interface' ) );
+        add_action( 'admin_enqueue_scripts', array( $this, 'builder_css' ) );
     }
 
     /**
@@ -33,17 +34,18 @@ class Fame_Builder {
         return set_url_scheme( $url );
     }
 
+    function builder_css( $hook ){
+        if ( $hook == 'post.php' || $hook == 'post-new.php' ) {
+            wp_enqueue_style( 'fame-builder', FAME_BUILDER_URL.'admin/assets/css/builder.css'  );
+        }
+    }
+
     function builder_interface( $post )
     {
         wp_enqueue_script( 'jquery' );
         wp_enqueue_media();
         wp_enqueue_script( 'sortable' );
         wp_enqueue_script( 'fame-builder', FAME_BUILDER_URL.'admin/assets/js/builder.js', array( 'jquery' ), false, true );
-        wp_localize_script( 'fame-builder', 'FAME_BUILDER', array(
-            'builder_css' => array(
-                'admin' => FAME_BUILDER_URL.'admin/assets/css/builder.css'
-            ),
-        ) );
 
         include dirname( __FILE__ ).'/admin/interface.php';
     }
