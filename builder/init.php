@@ -2,13 +2,39 @@
 
 class Fame_Builder
 {
+    static $content_key = '_fame_builder_content';
     function __construct()
     {
         define('FAME_BUILDER_URL', self::get_url(__FILE__));
         define('FAME_BUILDER_PATH', trailingslashit(dirname(__FILE__)));
-        add_action('edit_form_after_title', array($this, 'builder_interface'));
-        add_action('admin_enqueue_scripts', array($this, 'builder_css'));
-        add_action('admin_footer', array($this, 'wp_editor_tpl'));
+        add_action('edit_form_after_title', array( $this, 'builder_interface' ) );
+        add_action('admin_enqueue_scripts', array( $this, 'builder_css' ) );
+        add_action('admin_footer', array( $this, 'wp_editor_tpl' ) );
+
+        add_action('save_post', array( $this, 'save_builder_data' ), 55, 3 );
+        //do_action( 'save_post', $post_ID, $post, $update );
+    }
+
+    function save_builder_data( $post_id , $post = null , $update = false ){
+        $data =   isset( $_REQUEST['fame_builder_content'] ) ? $_REQUEST['fame_builder_content'] : '{}';
+        if ( is_string( $data ) ) {
+            $data = json_decode( stripslashes_deep( $data ) , true );
+        }
+
+        update_post_meta( $post_id, self::$content_key, $data );
+    }
+
+    static function get_builder_content( $post_id = 0 ){
+        if ( ! $post_id ) {
+            global $post;
+            $post_id = $post->ID;
+        }
+        return get_post_meta( $post_id, self::$content_key, true );
+    }
+    static function is_active_builder(){
+        global $hook_suffix;
+        $show = $hook_suffix == 'post.php' || $hook_suffix == 'post-new.php';
+        return  apply_filters( 'fame_builder_active_on', $show ) ;
     }
 
     /**
@@ -19,7 +45,7 @@ class Fame_Builder
      */
     static function get_url($file = '')
     {
-        if (!$file) {
+        if ( ! $file ) {
             return $file;
         }
         if ('WIN' === strtoupper(substr(PHP_OS, 0, 3))) {
@@ -37,18 +63,20 @@ class Fame_Builder
         return set_url_scheme($url);
     }
 
-    function wp_editor_tpl()
+    function wp_editor_tpl( )
     {
-        ?>
-        <script id="_wp-mce-editor-tpl" type="text/html">
-            <?php wp_editor('', '__wp_mce_editor__'); ?>
-        </script>
-        <?php
+        if ( self::is_active_builder() ) {
+            ?>
+            <script id="_wp-mce-editor-tpl" type="text/html">
+                <?php wp_editor('', '__wp_mce_editor__'); ?>
+            </script>
+            <?php
+        }
     }
 
     function builder_css($hook)
     {
-        if ($hook == 'post.php' || $hook == 'post-new.php') {
+        if ( self::is_active_builder() ) {
             wp_enqueue_style('fame-builder', FAME_BUILDER_URL . 'admin/assets/css/builder.css');
             wp_enqueue_style('wp-color-picker');
             wp_enqueue_style('jquery-ui');
@@ -63,7 +91,7 @@ class Fame_Builder
             'id' => 'text',
             'title' => esc_html__('Text', 'texdomain'),
             'icon'  => 'dashicons dashicons-editor-alignleft',
-            'preview' => '',
+            'preview' => ' {{ data.text }}',
             'fields' => array(
                 array(
                     'id' => 'text',
@@ -74,7 +102,6 @@ class Fame_Builder
                 )
             )
         );
-
 
         $items['image'] = array(
             'id' => 'image',
@@ -92,11 +119,10 @@ class Fame_Builder
             )
         );
 
-
         $items['gallery'] = array(
             'id' => 'gallery',
             'title' => esc_html__('Gallery', 'texdomain'),
-            'icon'  => 'http://localhost/fame/boston/wp-content/uploads/2016/05/9x13-doc-2-150x150.jpg',
+            'icon'  => '',
             'preview' => '',
             'fields' => array(
                 array(
@@ -145,7 +171,7 @@ class Fame_Builder
     static function get_row_config()
     {
         $columns = array();
-        for ( $i =  1; $i <= 12; $i ++  ){
+        for ( $i =  1; $i <= 4; $i ++  ){
             $columns[ $i ] = $i;
         }
         $config = array(
@@ -160,12 +186,12 @@ class Fame_Builder
                     'default' => '',
                 ),
                 array(
-                    'id' => 'text',
+                    'id' => 'columns',
                     'type' => 'select',
                     'title' => esc_html__( 'Columns', 'texdomain' ),
                     'default' => 1,
                     'options' => $columns
-                )
+                ),
             )
         );
         return $config;
@@ -198,6 +224,10 @@ class Fame_Builder
 
     function builder_interface( $post )
     {
+        if ( ! self::is_active_builder() ) {
+            return;
+        }
+
         wp_enqueue_script( 'jquery' );
         wp_enqueue_script( 'jquery-ui-core' );
         wp_enqueue_script( 'jquery-ui-sortable' );
@@ -210,6 +240,9 @@ class Fame_Builder
         wp_enqueue_script( 'fame-editor', FAME_BUILDER_URL.'admin/assets/js/editor.js', array( 'jquery' ), false, true );
         wp_enqueue_script( 'fame-builder', FAME_BUILDER_URL.'admin/assets/js/builder.js', array( 'jquery' ), false, true );
         wp_localize_script( 'fame-builder', 'FAME_BUILDER', array(
+            'default_row_col' => 2, // 50%
+            'max_columns' => 12,
+            'min_columns' => 2, //
             'row' => $this->get_row_config(),
             'col' => $this->get_col_config(),
             'items' => $this->get_items_config(),

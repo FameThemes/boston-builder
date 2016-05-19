@@ -94,18 +94,16 @@
   display: table;
   width: 100%;
   min-height: 100px;
- // border-collapse: collapse;
 }
 
 .fame-block-col {
-  //float: left;
+  display: table-cell;
   position: relative;
   padding: 10px;
   &.first {
     clear: left;
   }
-  //display: block;
-  display: table-cell;
+
   //border-collapse: collapse;
   vertical-align: top;
   min-height: 100px;
@@ -130,6 +128,19 @@
       }
   }
 }
+
+@for $i from 1 through 12 {
+  .fame-block-body {
+    .fame-block-col[data-col="#{$i}"] {
+      width: percentage(  $i / 12 );
+      // &:nth-child(#{$i}n+1 ) {
+      //clear: left;
+      // }
+    }
+  }
+}
+
+// data-col
 
 .fame-block-item {
   border: 1px solid #dddddd;
@@ -175,6 +186,22 @@
     content: "\f464";
   }
 }
+.fame-arrow-left {
+  &:before {
+    font-family: "dashicons";
+    content: "\f340";
+  }
+}
+
+.fame-arrow-right {
+  &:before {
+    font-family: "dashicons";
+    content: "\f344";
+  }
+}
+
+
+
 
 .fame-toolbar {
   background: #f5f5f5;

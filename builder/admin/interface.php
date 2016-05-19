@@ -12,69 +12,11 @@
     </div>
     <div class="fame-builder-area">
 
-
-        <div class="fame-block-row">
-            <div class="fame-block-header">
-               <div class="fame-block-heading">Row <span class="fame-block-name"></span></div>
-               <div class="block-toolbar fame-toolbar">
-                   <div class="fame-row-settings fame-settings"></div>
-                   <div class="fame-row-remove fame-remove"></div>
-               </div>
-            </div>
-            <div class="fame-block-body-wrap">
-                <div class="fame-block-body" data-columns="3">
-
-                    <div class="fame-block-col">
-                        <div class="fame-col-toolbar fame-toolbar">
-                            <div class="fame-col-move fame-move"></div>
-                            <div class="fame-col-settings fame-settings"></div>
-                            <div class="fame-col-add fame-add"></div>
-                        </div>
-                        <div class="block-col-inner">
-                            <div class="fame-block-item">item 1
-                                <div class="fame-item-toolbar fame-toolbar">
-                                    <div class="fame-item-move fame-move"></div>
-                                    <div class="fame-item-settings fame-settings"></div>
-                                    <div class="fame-col-add fame-add"></div>
-                                </div>
-                            </div>
-                            <div class="fame-block-item">item 2</div>
-                            <div class="fame-block-item">item 3</div>
-                        </div>
-                    </div>
-
-                    <div class="fame-block-col">
-                        <div class="fame-col-toolbar fame-toolbar">
-                            <div class="fame-col-move fame-move"></div>
-                            <div class="fame-col-settings fame-settings"></div>
-                            <div class="fame-col-remove fame-remove"></div>
-                        </div>
-                        <div class="block-col-inner">
-                            <div class="fame-block-item">item 5</div>
-                            <div class="fame-block-item">item 6</div>
-                            <div class="fame-block-item">item 7</div>
-                        </div>
-                    </div>
-
-                    <div class="fame-block-col">
-                        <div class="fame-col-toolbar fame-toolbar">
-                            <div class="fame-col-move fame-move"></div>
-                            <div class="fame-col-settings fame-settings"></div>
-                            <div class="fame-col-add fame-add"></div>
-                        </div>
-                        <div class="block-col-inner">
-                            <div class="fame-block-item">item 8</div>
-                            <div class="fame-block-item">item 9</div>
-                        </div>
-                    </div>
-
-                </div>
-            </div>
-        </div>
-
-
     </div><!-- fame-builder-area -->
+    <input type="hidden" class="fame_builder_content" name="fame_builder_content" value="<?php echo esc_attr( json_encode( Fame_Builder::get_builder_content() ) ); ?>">
 </div>
+
+
 
 
 <script type="text/html" id="fame-builder-row-tpl">
@@ -99,12 +41,17 @@
     <?php // $col_config = Fame_Builder::get_col_config(); ?>
     <div class="fame-block-col">
         <div class="fame-col-toolbar fame-toolbar">
+            <?php /*
             <div class="fame-col-move fame-move"></div>
-            <div class="fame-col-settings fame-settings"></div>
-        </div>
-        <div class="block-col-inner">
+            */ ?>
+            <div class="fame-col-l fame-arrow-left"></div>
+            <div class="fame-col-r fame-arrow-right"></div>
 
+
+            <div class="fame-col-settings fame-settings"></div>
+            <div class="fame-col-add fame-add"></div>
         </div>
+        <div class="block-col-inner"></div>
     </div>
 </script>
 
@@ -113,9 +60,10 @@
         <div class="fame-item-toolbar fame-toolbar">
             <div class="fame-item-move fame-move"></div>
             <div class="fame-item-settings fame-settings"></div>
-            <div class="fame-col-add fame-add"></div>
         </div>
-        {{{ data.preview }}}
+        <# if ( data.preview ) {  #>
+        <div class="fame-item-preview"></div>
+        <# } #>
     </div>
 </script>
 

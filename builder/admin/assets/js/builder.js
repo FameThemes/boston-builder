@@ -73,23 +73,9 @@ jQuery( document ).ready( function ( $ ) {
     
     var body = $( 'body' ),
         fame_editing_item = false,
-        fame_new_item_modal;
-
-
-    // Loaf view style
-    /*
-    if (  typeof window.FAME_BUILDER !== "undefined" ) {
-        $.each( window.FAME_BUILDER.builder_css, function( key, file ) {
-            $('<link>')
-                .appendTo('head')
-                .attr({type : 'text/css', rel : 'stylesheet'})
-                .attr('id', 'fame-builder-css-'+key )
-                .attr('href', file );
-        });
-
-        $( 'body' ).trigger( 'fame-builder-css-loaded' );
-    }
-    */
+        fame_selected_item = false,
+        fame_new_item_modal,
+        builder_area = $( '.fame-builder-area' );
 
     $( '.fame-builder' ).removeAttr( 'style' ).removeClass( 'hide' );
 
@@ -101,7 +87,6 @@ jQuery( document ).ready( function ( $ ) {
         var toolbar_wrap = toolbar.parent();
         toolbar_wrap.height( toolbar.outerHeight() );
         var tw = toolbar_wrap.width();
-        console.log( tw );
         toolbar.css( { width:  tw+'px' } );
         $( window ).resize( function(){
             var tw = toolbar_wrap.width();
@@ -157,12 +142,86 @@ jQuery( document ).ready( function ( $ ) {
     }
 
 
+    function render_template_by_html( template_html, data ){
+        if ( typeof data === "undefined" ) {
+            data = {};
+        }
+        /**
+         * Function that loads the Mustache template
+         */
+        var t = _.memoize( function ( ) {
+            var compiled,
+            /*
+             * Underscore's default ERB-style templates are incompatible with PHP
+             * when asp_tags is enabled, so WordPress uses Mustache-inspired templating syntax.
+             *
+             * @see track ticket #22344.
+             */
+                options = {
+                    evaluate: /<#([\s\S]+?)#>/g,
+                    interpolate: /\{\{\{([\s\S]+?)\}\}\}/g,
+                    escape: /\{\{([^\}]+?)\}\}(?!\})/g,
+                    variable: 'data'
+                };
+
+            compiled = _.template( template_html, null, options);
+            return compiled( data );
+        });
+
+        return t( );
+    }
+
+    function get_item_by_id( item_id ){
+        if ( typeof item_id !== 'string' && typeof item_id !== 'number' ) {
+            return false;
+        }
+
+        if ( typeof FAME_BUILDER.items[ item_id ] !== "undefined" ) {
+            return FAME_BUILDER.items[ item_id ];
+        }
+
+        return false;
+    }
+
+
     function update_data(){
         console.log( 'data-changed' );
+        var save_data = {};
+        // loop rows
+        $( '.fame-block-row', builder_area ).each( function( row_index ){
+            var r =  $( this );
+            save_data[ row_index ] = {
+                settings: {},
+                columns: [],
+            };
+            save_data[ row_index ].settings = r.prop( 'builder_data' );
+
+            // loop column
+            $( '.fame-block-body .fame-block-col', r ).each( function( column_index ) {
+                var c =  $( this );
+                var column_data = {
+                    settings: {},
+                    items: [],
+                };
+                column_data.settings = c.prop( 'builder_data' );
+                var items_data = [];
+                // loop item
+
+                $( '.block-col-inner .fame-block-item', c ).each( function( item_index ){
+                    items_data[ item_index ] =  $( this ).prop( 'builder_data' );
+                } );
+                column_data.items = items_data;
+                save_data[ row_index ].columns[ column_index ] = column_data;
+            });
+
+        } );
+
+        $( '.fame_builder_content', body ).val( JSON.stringify( save_data ) );
+
     }
 
     // Sortable rows
-    $( ".fame-builder-area" ).sortable({
+    $( ".fame-builder-area", body ).sortable({
         //tolerance: "pointer",
         handle: '.fame-block-header',
         zIndex: 99999,
@@ -172,7 +231,7 @@ jQuery( document ).ready( function ( $ ) {
     });
 
     function update_columns_class() {
-        $( '.fame-block-body' ).each( function(){
+        $( '.fame-block-body', body ).each( function(){
             var r = $( this );
             var c = $( this ).attr( 'data-columns' ) || 0;
             c = parseInt( c );
@@ -193,6 +252,7 @@ jQuery( document ).ready( function ( $ ) {
             context = $( 'body' );
         }
 
+        /*
         $(".fame-block-body", context ).sortable({
             handle: '.fame-col-move',
             placeholder: 'fame-block-col fame-placeholder',
@@ -218,6 +278,7 @@ jQuery( document ).ready( function ( $ ) {
                 update_data();
             }
         });
+        */
 
 
         $(".block-col-inner", context ).sortable({
@@ -307,12 +368,12 @@ jQuery( document ).ready( function ( $ ) {
 
 
     // Image handle
-    $( 'body' ).on( 'click', '.fame-media-preview', function( e ) {
+    body.on( 'click', '.fame-media-preview', function( e ) {
         e.preventDefault();
         fame_editing_media = $( this );
         frame.open();
     } );
-    $( 'body' ).on( 'click', '.fame-media-remove', function( e ) {
+    body.on( 'click', '.fame-media-remove', function( e ) {
         e.preventDefault();
         var p = $( this ).closest( '.fame-media' );
         p.removeClass( 'added' );
@@ -385,17 +446,17 @@ jQuery( document ).ready( function ( $ ) {
         var modal = get_template( 'fame-builder-modal-tpl', data );
         modal = $( modal );
         $( '.fame-modal-drop' ).remove();
-        $( 'body' ).append( '<div class="fame-modal-drop"></div>' );
-        $( 'body' ).append( modal );
+        body.append( '<div class="fame-modal-drop"></div>' );
+        body.append( modal );
         set_modal_size( modal );
         input_fields( modal );
     }
 
     // Close modal
     function remove_modal(){
-        $('.fame-item-modal' ).remove();
-        $('.fame-modal' ).hide();
-        $( '.fame-modal-drop' ).remove();
+        $('.fame-item-modal' , body ).remove();
+        $('.fame-modal', body ).hide();
+        $( '.fame-modal-drop', body ).remove();
     }
     body.on( 'click', '.fame-modal .fame-modal-remove, .fame-modal-drop', function( e){
         e.preventDefault();
@@ -440,38 +501,39 @@ jQuery( document ).ready( function ( $ ) {
         body.trigger( 'builder_data_setting_update', [ fame_editing_item, new_data ] );
     } );
 
-    // Add new item
-
     // Open modal add new item
     fame_new_item_modal = get_template( 'fame-builder-add-items-tpl', {} );
     $( '.fame-modal-drop' ).remove();
     fame_new_item_modal = $( fame_new_item_modal );
     fame_new_item_modal.hide();
-    $( 'body' ).append( fame_new_item_modal );
+    body.append( fame_new_item_modal );
     set_modal_size( fame_new_item_modal );
-    $( 'body' ).on( 'click', '.new-item', function( e ){
+    body.on( 'click', '.new-item', function( e ){
         e.preventDefault();
-        $( 'body' ).append( '<div class="fame-modal-drop"></div>' );
+        body.append( '<div class="fame-modal-drop"></div>' );
         fame_new_item_modal.show();
     } );
-
-    $( 'body' ).on( 'click', '.fame-col-add.fame-add', function( e ){
-        e.preventDefault();
-        $( 'body' ).append( '<div class="fame-modal-drop"></div>' );
-        fame_new_item_modal.show();
-    } );
-
     // End modal
 
     // Add new column
-    function new_item_object( settings ){
-        settings = $.extend( {}, {
+    function new_item_object( save_values ){
+        save_values = $.extend( {}, {
             _builder_type: 'item',
-        }, data );
-        data._builder_type = 'item';
-        var o = get_template( 'fame-builder-item-tpl', settings );
+            _builder_id:    'text',
+        }, save_values );
+        save_values._builder_type = 'item';
+        var config = get_item_by_id( save_values._builder_id );
+        config.fields = setup_fields_data( config.fields, save_values );
+        var o = get_template( 'fame-builder-item-tpl', config );
         o = $( o );
-        o.prop( 'builder_data', settings );
+
+        // Update preview
+        if ( typeof config.preview !== "undefined" ){
+            var preview = render_template_by_html( config.preview, save_values );
+            $( '.fame-item-preview', o ).append( preview );
+        }
+
+        o.prop( 'builder_data', save_values );
         return o;
     }
 
@@ -479,13 +541,15 @@ jQuery( document ).ready( function ( $ ) {
     function new_column_object( settings ){
         settings = $.extend( {}, {
             _builder_type: 'column',
+            _builder_col: Math.round( FAME_BUILDER.max_columns / FAME_BUILDER.default_row_col ),
         }, settings );
 
         settings._builder_type = 'column';
-
         var c = get_template( 'fame-builder-col-tpl', settings );
         c = $( c );
+        c.attr( 'data-col', settings._builder_col );
         c.prop( 'builder_data', settings );
+        sort_columns( c );
         return c;
     }
 
@@ -494,10 +558,11 @@ jQuery( document ).ready( function ( $ ) {
         settings = $.extend( {}, {
             _builder_type: 'row',
         }, settings );
-        settings._builder_type = 'column';
+        settings._builder_type = 'row';
         var r = get_template( 'fame-builder-row-tpl', settings );
         r = $( r );
         r.prop( 'builder_data', settings );
+        sort_columns( r );
         return r;
     }
 
@@ -505,7 +570,6 @@ jQuery( document ).ready( function ( $ ) {
         data = $.extend( {}, {
             settings: {},
             columns: [],
-            _builder_type: 'row',
         }, data );
 
         data.settings = $.extend( {}, {
@@ -518,8 +582,10 @@ jQuery( document ).ready( function ( $ ) {
 
         var num_col = string_to_number( data.settings.columns );
         if ( num_col <= 0 ) {
-            num_col = 1;
+            num_col = FAME_BUILDER.default_row_col;
         }
+
+        $( '.fame-block-body', r ).attr( 'data-columns', num_col );
 
         var column_data, c;
         for ( var i = 0; i < num_col; i++ ) {
@@ -538,15 +604,17 @@ jQuery( document ).ready( function ( $ ) {
                 title: '',
                 id: '',
                 _builder_type: 'column',
+                _builder_col: Math.round( FAME_BUILDER.max_columns / num_col ),
             }, column_data.settings );
 
             c = new_column_object( column_data.settings );
-            // check item
 
-            if ( typeof column_data.items !== 'array' ) {
+            // check items
+            if ( typeof column_data.items !== 'array' && typeof column_data.items !== 'object') {
                 column_data.items = [];
             }
             var item_data = {}, o;
+
             for ( var j = 0; j < column_data.items.length; j++ ) {
                 if ( typeof column_data.items[ j ] !== "undefined" ) {
                     item_data = column_data.items[ j ];
@@ -564,27 +632,224 @@ jQuery( document ).ready( function ( $ ) {
         return r;
     }
 
-
-    $( 'body' ).on( 'click', '.new-row', function( e ){
+    // New row
+    body.on( 'click', '.new-row', function( e ){
         e.preventDefault();
-
         var r = add_row_object();
-        $( '.fame-builder-area' ).append( r );
-        sort_columns( r );
+        $( '.fame-builder-area', body ).append( r );
+        update_data();
+
+    } );
+
+    // New item
+    body.on( 'click', '.fame-block-col .fame-add', function( e ){
+        e.preventDefault();
+        $( 'body' ).append( '<div class="fame-modal-drop"></div>' );
+        var col = $( this ).closest( '.fame-block-col' );
+        fame_selected_item = col;
+        fame_new_item_modal.show();
+    } );
+
+
+    // Item selected
+    body.on( 'click', '.fame-add-item', function( e ){
+        e.preventDefault();
+        var item = $( this );
+        var item_id = item.attr( 'data-id' ) || '';
+        fame_new_item_modal.hide();
+        remove_modal();
+        var item_config = get_item_by_id( item_id );
+        //console.log( item_id );
+        //console.log( item_config );
+        if ( item_id !== '' && item_config ) {
+            if ( fame_selected_item ) {
+                var col_data = fame_selected_item.prop( 'builder_data' );
+                if ( col_data._builder_type == 'column' ) {
+                    var data = {
+                        _builder_type: 'item',
+                        _builder_id:   item_id,
+                    };
+                    var c = new_item_object( data );
+                    $( '.block-col-inner', fame_selected_item ).append( c );
+                    //fame_editing_item = c;
+                    //open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
+                }
+            }
+        }
+
+        update_data();
+    } );
+
+    // when hit right col
+    body.on( 'click', '.fame-block-col .fame-col-r', function( e ){
+        e.preventDefault();
+        var col = $( this ).closest( '.fame-block-col' );
+        var col_data = col.prop( 'builder_data' );
+        if ( typeof col_data._builder_col === "undefined" ) {
+            col_data._builder_col = Math.round( FAME_BUILDER.max_columns / num_col );
+        }
+
+        var index = col.index();
+        var num_sib = col.siblings().length;
+
+        console.log( 'Click right info: ' + index + '|' + num_sib );
+
+        if ( num_sib == index ) { // is last child
+
+            if ( col.prev().length > 0 ) {
+                var prev_col_data = col.prev().prop( 'builder_data' );
+                if ( typeof prev_col_data._builder_col === "undefined" ) {
+                    prev_col_data._builder_col = Math.round( FAME_BUILDER.max_columns / num_col );
+                }
+
+                if ( col_data._builder_col > FAME_BUILDER.min_columns ) {
+                    col_data._builder_col --;
+                    prev_col_data._builder_col ++;
+                }
+
+                col.prop( 'builder_data', col_data ).attr( 'data-col', col_data._builder_col );
+                col.prev().prop( 'builder_data', prev_col_data ).attr( 'data-col', prev_col_data._builder_col );
+            }
+        } else {
+            // if current col has sibling
+            if ( col.next().length > 0) {
+                var next_col_data = col.next().prop('builder_data');
+                if (typeof next_col_data._builder_col === "undefined") {
+                    next_col_data._builder_col = Math.round(FAME_BUILDER.max_columns / num_col);
+                }
+
+                if (next_col_data._builder_col > FAME_BUILDER.min_columns) {
+                    col_data._builder_col++;
+                    next_col_data._builder_col--;
+                }
+
+                col.prop('builder_data', col_data).attr('data-col', col_data._builder_col);
+                col.next().prop('builder_data', next_col_data).attr('data-col', next_col_data._builder_col);
+                console.log('run: ' + col_data._builder_col + '|' + next_col_data._builder_col);
+            }
+        }
+
+        update_data();
+    } );
+
+    // when hit left col
+    body.on( 'click', '.fame-block-col .fame-col-l', function( e ){
+        e.preventDefault();
+        var col = $( this ).closest( '.fame-block-col' );
+        var col_data = col.prop( 'builder_data' );
+        if ( typeof col_data._builder_col === "undefined" ) {
+            col_data._builder_col = Math.round( FAME_BUILDER.max_columns / num_col );
+        }
+
+        var index = col.index();
+        var num_sib = col.siblings().length;
+
+        console.log( 'Left right info: ' + index + '|' + num_sib );
+
+        if ( index == 0 ){ // if current item is first child
+            // if current col has next sibling
+            if ( col.next().length > 0 ) {
+                var next_col_data = col.next().prop( 'builder_data' );
+                if ( typeof next_col_data._builder_col === "undefined" ) {
+                    next_col_data._builder_col = Math.round( FAME_BUILDER.max_columns / num_col );
+                }
+
+                if ( col_data._builder_col > FAME_BUILDER.min_columns ) {
+                    col_data._builder_col--;
+                    next_col_data._builder_col++;
+                }
+
+                col.prop( 'builder_data', col_data ).attr( 'data-col', col_data._builder_col );
+                col.next().prop( 'builder_data', next_col_data ).attr( 'data-col', next_col_data._builder_col );
+            }
+        } else {
+            // if current col has prev sibling
+            if ( col.prev().length > 0 ) {
+                var prev_col_data = col.prev().prop( 'builder_data' );
+                if ( typeof prev_col_data._builder_col === "undefined" ) {
+                    prev_col_data._builder_col = Math.round( FAME_BUILDER.max_columns / num_col );
+                }
+
+                if ( prev_col_data._builder_col > FAME_BUILDER.min_columns ) {
+                    col_data._builder_col++;
+                    prev_col_data._builder_col--;
+                }
+
+                col.prop( 'builder_data', col_data ).attr( 'data-col', col_data._builder_col );
+                col.prev().prop( 'builder_data', prev_col_data ).attr( 'data-col', prev_col_data._builder_col );
+            }
+        }
+        update_data();
+
     } );
 
 
 
     // Event handle when data change
-
    // fame_editing_item.trigger( 'builder_data_update', [ fame_editing_item, data] );
 
     body.on( 'builder_data_setting_update', function( e, item, data ) {
-        if ( data._builder_type === 'row' ) {
+        data = $.extend( {}, {
+            id: '',
+            _builder_type: '',
+            _builder_id:   '',
+        }, data );
 
-        }
+        switch ( data._builder_type ) {
+            case 'row':
+                if ( typeof data.columns !== "undefined" ) {
+                    var n = string_to_number( data.columns );
+                    var bd = $( '.fame-block-body', item );
+                    var nc = $( '.fame-block-col', bd ).length;
+                    bd.attr( 'data-columns', n );
+                    $( '.fame-block-col', bd ).each( function(){
+                        var data = $( this ).prop( 'builder_data' );
+                        var c =  Math.round( FAME_BUILDER.max_columns / n );
+                        data._builder_col = c;
+                        $( this ).attr( 'data-col', c );
+                    } );
+
+                    var i ;
+                    if ( n > nc ) {
+                        for ( i = 0; i < n - nc; i ++ ) {
+                            var tpl_c = new_column_object( { _builder_col: n, } );
+                            tpl_c.attr( 'data-col', n );
+                            bd.append( tpl_c );
+                        }
+                    } else  if ( nc > n ) {
+
+                        for ( i = nc - 1; i > n - 1; i -- ) {
+                            $( '.fame-block-col', bd ).eq( i ).remove();
+                        }
+                    }
+                }
+                break;
+            case 'item':
+                // Update preview
+                var config = get_item_by_id( data._builder_id );
+                if ( typeof config.preview !== "undefined" ){
+                    var preview = '';
+                    preview = render_template_by_html( config.preview, data );
+                    $( '.fame-item-preview', item ).append( preview );
+                }
+                break;
+
+        } // end switch
+
     } );
 
+    // When page load
+    var data = $( '.fame_builder_content', body ).val();
+    try {
+        data = JSON.parse( data );
+    } catch ( e ) {
+        data = {};
+    }
+
+    $.each( data, function( index, row ){
+        var r = add_row_object( row );
+        $( '.fame-builder-area', body ).append( r );
+    } );
 
 
 } );

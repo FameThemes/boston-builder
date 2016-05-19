@@ -96,9 +96,9 @@
 }
 
 .fame-block-col {
+  display: table-cell;
   position: relative;
   padding: 10px;
-  display: table-cell;
   vertical-align: top;
   min-height: 100px;
   background: #ffffff;
@@ -164,6 +164,54 @@
   width: 8.33333%;
 }
 
+.fame-block-body .fame-block-col[data-col="1"] {
+  width: 8.33333%;
+}
+
+.fame-block-body .fame-block-col[data-col="2"] {
+  width: 16.66667%;
+}
+
+.fame-block-body .fame-block-col[data-col="3"] {
+  width: 25%;
+}
+
+.fame-block-body .fame-block-col[data-col="4"] {
+  width: 33.33333%;
+}
+
+.fame-block-body .fame-block-col[data-col="5"] {
+  width: 41.66667%;
+}
+
+.fame-block-body .fame-block-col[data-col="6"] {
+  width: 50%;
+}
+
+.fame-block-body .fame-block-col[data-col="7"] {
+  width: 58.33333%;
+}
+
+.fame-block-body .fame-block-col[data-col="8"] {
+  width: 66.66667%;
+}
+
+.fame-block-body .fame-block-col[data-col="9"] {
+  width: 75%;
+}
+
+.fame-block-body .fame-block-col[data-col="10"] {
+  width: 83.33333%;
+}
+
+.fame-block-body .fame-block-col[data-col="11"] {
+  width: 91.66667%;
+}
+
+.fame-block-body .fame-block-col[data-col="12"] {
+  width: 100%;
+}
+
 .fame-block-item {
   border: 1px solid #dddddd;
   background: #ffffff;
@@ -198,6 +246,16 @@
 .fame-edit:before {
   font-family: "dashicons";
   content: "\f464";
+}
+
+.fame-arrow-left:before {
+  font-family: "dashicons";
+  content: "\f340";
+}
+
+.fame-arrow-right:before {
+  font-family: "dashicons";
+  content: "\f344";
 }
 
 .fame-toolbar {
