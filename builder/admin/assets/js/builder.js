@@ -185,7 +185,6 @@ jQuery( document ).ready( function ( $ ) {
 
 
     function update_data(){
-        console.log( 'data-changed' );
         var save_data = {};
         // loop rows
         $( '.fame-block-row', builder_area ).each( function( row_index ){
@@ -429,6 +428,7 @@ jQuery( document ).ready( function ( $ ) {
                 default: '',
                 value: '',
             }, field );
+            fields[ index ].value = '';
             if ( is_empty_data ) {
                 fields[ index ].value = fields[ index ].default;
             } else {
@@ -444,6 +444,7 @@ jQuery( document ).ready( function ( $ ) {
     function open_modal( data, fields ){
         data.html = get_template( 'fame-builder-fields-tpl', fields );
         var modal = get_template( 'fame-builder-modal-tpl', data );
+        $('.fame-item-modal' , body ).remove();
         modal = $( modal );
         $( '.fame-modal-drop' ).remove();
         body.append( '<div class="fame-modal-drop"></div>' );
@@ -454,9 +455,12 @@ jQuery( document ).ready( function ( $ ) {
 
     // Close modal
     function remove_modal(){
-        $('.fame-item-modal' , body ).remove();
+        $( '.fame-modal-item.type-editor .wp-editor-area', body ).wp_js_editor( 'remove' );
+
+        $('.fame-item-modal' , body ).hide();
         $('.fame-modal', body ).hide();
         $( '.fame-modal-drop', body ).remove();
+
     }
     body.on( 'click', '.fame-modal .fame-modal-remove, .fame-modal-drop', function( e){
         e.preventDefault();
@@ -468,9 +472,11 @@ jQuery( document ).ready( function ( $ ) {
     body.on( 'click', '.fame-block-item .fame-item-settings', function( e){
         e.preventDefault();
         var item_id = 'text';
-        var data = FAME_BUILDER.items[ item_id ] || {};
+        var data = get_item_by_id( item_id );
         fame_editing_item = $( this ).closest( '.fame-block-item' );
-        open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
+        var save_value = fame_editing_item.prop( 'builder_data' );
+        var d = setup_fields_data( data.fields, save_value );
+        open_modal( data, d );
     } );
 
     // Column settings modal
@@ -496,8 +502,10 @@ jQuery( document ).ready( function ( $ ) {
         var new_data = $( 'form.fame-modal-body-inner' ).serializeObject();
         new_data = $.extend( {}, old_data , new_data );
         fame_editing_item.prop( 'builder_data', new_data );
+
         remove_modal();
         update_data();
+
         body.trigger( 'builder_data_setting_update', [ fame_editing_item, new_data ] );
     } );
 
@@ -516,7 +524,8 @@ jQuery( document ).ready( function ( $ ) {
     // End modal
 
     // Add new column
-    function new_item_object( save_values ){
+    function new_item_object( data ){
+        var save_values = _.clone( data );
         save_values = $.extend( {}, {
             _builder_type: 'item',
             _builder_id:    'text',
@@ -530,7 +539,7 @@ jQuery( document ).ready( function ( $ ) {
         // Update preview
         if ( typeof config.preview !== "undefined" ){
             var preview = render_template_by_html( config.preview, save_values );
-            $( '.fame-item-preview', o ).append( preview );
+            $( '.fame-item-preview', o ).html( preview );
         }
 
         o.prop( 'builder_data', save_values );
@@ -659,8 +668,6 @@ jQuery( document ).ready( function ( $ ) {
         fame_new_item_modal.hide();
         remove_modal();
         var item_config = get_item_by_id( item_id );
-        //console.log( item_id );
-        //console.log( item_config );
         if ( item_id !== '' && item_config ) {
             if ( fame_selected_item ) {
                 var col_data = fame_selected_item.prop( 'builder_data' );
@@ -671,7 +678,7 @@ jQuery( document ).ready( function ( $ ) {
                     };
                     var c = new_item_object( data );
                     $( '.block-col-inner', fame_selected_item ).append( c );
-                    //fame_editing_item = c;
+                    fame_editing_item = false;
                     //open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
                 }
             }
@@ -691,8 +698,6 @@ jQuery( document ).ready( function ( $ ) {
 
         var index = col.index();
         var num_sib = col.siblings().length;
-
-        console.log( 'Click right info: ' + index + '|' + num_sib );
 
         if ( num_sib == index ) { // is last child
 
@@ -743,8 +748,6 @@ jQuery( document ).ready( function ( $ ) {
 
         var index = col.index();
         var num_sib = col.siblings().length;
-
-        console.log( 'Left right info: ' + index + '|' + num_sib );
 
         if ( index == 0 ){ // if current item is first child
             // if current col has next sibling
@@ -830,7 +833,7 @@ jQuery( document ).ready( function ( $ ) {
                 if ( typeof config.preview !== "undefined" ){
                     var preview = '';
                     preview = render_template_by_html( config.preview, data );
-                    $( '.fame-item-preview', item ).append( preview );
+                    $( '.fame-item-preview', item ).html( preview );
                 }
                 break;
 

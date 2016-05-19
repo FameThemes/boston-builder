@@ -23,6 +23,7 @@
                 $( "#"+id ).replaceWith( template );
                 // set content
                 $( '#'+id ).val( content );
+                $( '#'+id ).attr( 'name', settings.name );
 
                 $wrap = tinymce.$( '#wp-' + id + '-wrap' );
 
@@ -33,6 +34,10 @@
                 $wrap.removeClass( 'html-active').addClass( 'tmce-active' );
 
                 tmceInit.init_instance_callback = function( editor ){
+
+                    editor.on('change', function () {
+                        tinymce.triggerSave();
+                    });
 
                     if (  typeof settings === 'object' ) {
                         if ( typeof settings.mod === 'string' && settings.mod === 'html' ){
@@ -49,7 +54,7 @@
                                 editor.on('keyup change', function (e) {
                                     var html = editor.getContent( { format: 'raw' } );
                                     html = _wpEditor.removep( html );
-                                    $('#' + settings.sync_id).val( html ).trigger('change');
+                                    $('#' + settings.sync_id ).val( html ).trigger('change');
                                 });
                             } else {
                                 editor.on('keyup change', function (e) {
@@ -67,17 +72,13 @@
                                     settings.sync_id.val( v ).trigger('change');
                                 }
                             } );
-
-
                         }
                     }
                 };
 
-
                 //console.log( tmceInit );
                 tmceInit.plugins = tmceInit.plugins.replace('fullscreen,', '');
                 tinyMCEPreInit.mceInit[ id ] = tmceInit;
-                //console.log( tmceInit );
 
                 qtInit.id = id;
                 tinyMCEPreInit.qtInit[ id ] = qtInit;
@@ -124,20 +125,28 @@
 
         remove: function( id ){
             var content = '';
-            //var editor = false;
-            if ( editor = tinymce.get(id) ) {
-                content = editor.getContent( { format: 'raw' } );
-                content = _wpEditor.removep( content );
-                editor.remove();
-            } else {
-                content = $( '#'+id ).val();
-            }
-
-            if ( $( '#wp-' + id + '-wrap').length > 0 ) {
-                window._wpEditorBackUp = window._wpEditorBackUp || {};
-                if (  typeof window._wpEditorBackUp[ id ] !== "undefined" ) {
-                    $( '#wp-' + id + '-wrap').replaceWith( window._wpEditorBackUp[ id ] );
+            try {
+                //var editor = false;
+                if (editor = tinymce.get(id)) {
+                    content = editor.getContent({format: 'raw'});
+                    content = _wpEditor.removep(content);
+                    editor.remove();
+                } else {
+                    content = $('#' + id).val();
                 }
+
+                if ($('#wp-' + id + '-wrap').length > 0) {
+                    window._wpEditorBackUp = window._wpEditorBackUp || {};
+                    if (typeof window._wpEditorBackUp[id] !== "undefined") {
+                        $('#wp-' + id + '-wrap').replaceWith(window._wpEditorBackUp[id]);
+                    }
+                }
+
+                delete  tinyMCEPreInit.qtInit[id];
+                delete  tinyMCEPreInit.mceInit[id];
+
+            } catch ( e ) {
+
             }
 
             $( '#'+id ).val( content );
@@ -167,6 +176,17 @@
             var id =  edit_area.attr( 'id' ) || '';
             if ( id === '' ){
                 return ;
+            }
+
+            var name = edit_area.attr( 'name' ) || '';
+            if ( name != '' ) {
+                options.name = name;
+            } else {
+                options.name = id;
+            }
+
+            if ( options.sync_id == '' ) {
+              //  options.sync_id = id;
             }
 
             if ( 'remove' !== options ) {

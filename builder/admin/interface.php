@@ -13,7 +13,7 @@
     <div class="fame-builder-area">
 
     </div><!-- fame-builder-area -->
-    <input type="hidden" class="fame_builder_content" name="fame_builder_content" value="<?php echo esc_attr( json_encode( Fame_Builder::get_builder_content() ) ); ?>">
+    <input type="hidden" autocomplete="off" class="fame_builder_content" name="fame_builder_content" value="<?php echo esc_attr( json_encode( Fame_Builder::get_builder_content() ) ); ?>">
 </div>
 
 
@@ -182,7 +182,7 @@
                     <label>
                         <span>{{ item.title }}</span>
                     </label>
-                    <textarea name="{{ item.id }}"  class="fame-input editor">{{ item.value }}</textarea>
+                    <textarea name="{{ item.id }}" class="fame-input editor">{{ item.value }}</textarea>
                 <# break;
                     default:  #>
                     <label>

@@ -95,7 +95,7 @@ class Fame_Builder
             'fields' => array(
                 array(
                     'id' => 'text',
-                    'type' => 'textarea',
+                    'type' => 'editor',
                     'title' => esc_html__('text', 'texdomain'),
                     'desc' => __('Desc Here', 'texdomain'),
                     'default' => __('Default value', 'texdomain'),
