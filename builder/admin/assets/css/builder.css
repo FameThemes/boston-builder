@@ -30,6 +30,8 @@
   display: inline-block;
   border-radius: 3px;
   cursor: pointer;
+  line-height: 20px;
+  font-weight: bold;
 }
 
 .fame-builder-btn span {
@@ -188,6 +190,16 @@
   content: "\f545";
 }
 
+.fame-add:before {
+  font-family: "dashicons";
+  content: "\f132";
+}
+
+.fame-edit:before {
+  font-family: "dashicons";
+  content: "\f464";
+}
+
 .fame-toolbar {
   background: #f5f5f5;
   display: block;
@@ -230,7 +242,6 @@
   box-sizing: border-box;
   width: 500px;
   position: fixed !important;
-  z-index: 9999;
   top: 300px;
   left: 500px;
   min-height: 200px;
@@ -300,6 +311,12 @@
   width: 100%;
   padding: 15px;
 }
+.fame-modal.fame-no-header .fame-modal-body {
+  top: 0px;
+}
+.fame-modal.fame-no-footer .fame-modal-body {
+  bottom: 0px;
+}
 
 .fame-modal-item {
   padding: 15px 0px;
@@ -365,13 +382,59 @@
   width: 100%;
   display: block;
   text-align: center;
-  background-position: fixed;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
+}
+
+/* Modal add new */
+.fame-builder-items:after {
+  content: " ";
+  display: block;
+  clear: both;
+}
+.fame-builder-items .fame-add-item {
+  width: 12.5%;
+  display: block;
+  float: left;
+  cursor: pointer;
+}
+.fame-builder-items .fame-add-item-inner {
+  padding: 5px;
+  text-align: center;
+}
+.fame-builder-items .fame-add-thumb {
+  position: relative;
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  border: 1px solid #dddddd;
+}
+.fame-builder-items .fame-add-thumb:after {
+  content: " ";
+  display: block;
+  padding-top: 100%;
+}
+.fame-builder-items .fame-add-icon {
+  font-size: 20px;
+  width: 20px;
+  height: 20px;
+  display: block;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -10px;
+  margin-left: -10px;
+}
+.fame-builder-items .fame-add-icon:before {
+  line-height: 20px;
+  font-size: 20px;
 }
 
 /*  JQuery UI Resizeable */

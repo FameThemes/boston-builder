@@ -55,11 +55,14 @@ class Fame_Builder
         }
     }
 
-    function get_items_config()
+    static function get_items_config()
     {
         $items = array();
+
         $items['text'] = array(
+            'id' => 'text',
             'title' => esc_html__('Text', 'texdomain'),
+            'icon'  => 'dashicons dashicons-editor-alignleft',
             'preview' => '',
             'fields' => array(
                 array(
@@ -71,11 +74,80 @@ class Fame_Builder
                 )
             )
         );
-        return $items;
+
+
+        $items['image'] = array(
+            'id' => 'image',
+            'title' => esc_html__('Image', 'texdomain'),
+            'icon'  => 'dashicons dashicons-format-image',
+            'preview' => '',
+            'fields' => array(
+                array(
+                    'id' => 'text',
+                    'type' => 'textarea',
+                    'title' => esc_html__('text', 'texdomain'),
+                    'desc' => __('Desc Here', 'texdomain'),
+                    'default' => __('Default value', 'texdomain'),
+                )
+            )
+        );
+
+
+        $items['gallery'] = array(
+            'id' => 'gallery',
+            'title' => esc_html__('Gallery', 'texdomain'),
+            'icon'  => 'http://localhost/fame/boston/wp-content/uploads/2016/05/9x13-doc-2-150x150.jpg',
+            'preview' => '',
+            'fields' => array(
+                array(
+                    'id' => 'text',
+                    'type' => 'textarea',
+                    'title' => esc_html__('text', 'texdomain'),
+                    'desc' => __('Desc Here', 'texdomain'),
+                    'default' => __('Default value', 'texdomain'),
+                )
+            )
+        );
+
+
+        $items['tabs'] = array(
+            'id' => 'tabs',
+            'title' => esc_html__('Tabs', 'texdomain'),
+            'icon'  => '',
+            'preview' => '',
+            'fields' => array(
+                array(
+                    'id' => 'text',
+                    'type' => 'textarea',
+                    'title' => esc_html__('text', 'texdomain'),
+                    'desc' => __('Desc Here', 'texdomain'),
+                    'default' => __('Default value', 'texdomain'),
+                )
+            )
+        );
+
+        // Ensure item is unique
+        $new_array = array();
+        foreach ( $items as $item ) {
+            $item = wp_parse_args( $item, array(
+                'id' => '',
+                'title' => '',
+                'icon' => '',
+                'preview' => '',
+                'fields' => array(),
+            ) );
+            $new_array[ $item['id'] ] = $item;
+        }
+
+        return $new_array;
     }
 
-    function get_row_config()
+    static function get_row_config()
     {
+        $columns = array();
+        for ( $i =  1; $i <= 12; $i ++  ){
+            $columns[ $i ] = $i;
+        }
         $config = array(
             'title' => esc_html__('Row', 'texdomain'),
             'preview' => '',
@@ -89,17 +161,17 @@ class Fame_Builder
                 ),
                 array(
                     'id' => 'text',
-                    'type' => 'textarea',
-                    'title' => esc_html__( 'Row description', 'texdomain' ),
-                    'desc' => __( 'Desc Here', 'texdomain' ),
-                    'default' => __( 'description value', 'texdomain' ),
+                    'type' => 'select',
+                    'title' => esc_html__( 'Columns', 'texdomain' ),
+                    'default' => 1,
+                    'options' => $columns
                 )
             )
         );
         return $config;
     }
 
-    function get_col_config()
+    static function get_col_config()
     {
         $config = array(
             'title' => esc_html__('Column', 'texdomain'),
@@ -140,7 +212,10 @@ class Fame_Builder
         wp_localize_script( 'fame-builder', 'FAME_BUILDER', array(
             'row' => $this->get_row_config(),
             'col' => $this->get_col_config(),
-            'items' => $this->get_items_config()
+            'items' => $this->get_items_config(),
+            'texts' => array(
+                'new_item_modal' => __( 'Add new item', 'textdomain' ),
+            ),
         ) );
         include dirname( __FILE__ ).'/admin/interface.php';
     }

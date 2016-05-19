@@ -35,14 +35,46 @@
 })(jQuery);
 
 
+function string_to_number( string ) {
+    if ( typeof string === 'number' ) {
+        return string;
+    }
+    var n  = string.match(/\d+$/);
+    if ( n ) {
+        return parseFloat( n[0] );
+    } else {
+        return 0;
+    }
+}
+
+function string_to_bool( v ) {
+    if (  typeof v === 'boolean' ){
+        return v;
+    }
+
+    if (  typeof v === 'number' ){
+        return v === 0  ? false : true;
+    }
+
+    if (  typeof v === 'string' ){
+        if ( v === 'true' || v === '1' ) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    return false;
+}
+
+
 
 jQuery( document ).ready( function ( $ ) {
     
     var body = $( 'body' ),
         fame_editing_item = false,
-        fame_editing_col = false,
-        fame_editing_row = false;
-        fame_editing_item_type = '';
+        fame_new_item_modal;
+
 
     // Loaf view style
     /*
@@ -107,7 +139,7 @@ jQuery( document ).ready( function ( $ ) {
              * Underscore's default ERB-style templates are incompatible with PHP
              * when asp_tags is enabled, so WordPress uses Mustache-inspired templating syntax.
              *
-             * @see trac ticket #22344.
+             * @see track ticket #22344.
              */
             options = {
                 evaluate: /<#([\s\S]+?)#>/g,
@@ -115,12 +147,6 @@ jQuery( document ).ready( function ( $ ) {
                 escape: /\{\{([^\}]+?)\}\}(?!\})/g,
                 variable: 'data'
             };
-            /*
-            return function ( data ) {
-                compiled = _.template( jQuery( '#gallery-one-item-tpl').html(), null, options);
-                return compiled( data );
-            };
-            */
             var html = $( '#' +_tmpl_id ).html();
             //console.log( html );
             compiled = _.template( html, null, options);
@@ -230,17 +256,6 @@ jQuery( document ).ready( function ( $ ) {
     } );
 
 
-
-    // Test
-    $( 'body' ).on( 'click', '.new-item', function(e ){
-        e.preventDefault();
-        var r = $( '.fame-block-row' ).eq( 0 ).clone();
-        $( '.fame-builder-area ' ).append( r );
-
-        sort_columns( r );
-    } );
-
-
     /**
      *  Input fields -----------------------------------------------
      */
@@ -340,23 +355,6 @@ jQuery( document ).ready( function ( $ ) {
         } );
 
     }
-    // Modal
-    function modal (){
-        var modal = get_template( 'fame-builder-modal-tpl', {} );
-        modal = $( modal );
-        $( 'body' ).append( modal );
-
-        /*
-         var containment = $( '#wpcontent' ).length > 0 ? '#wpcontent' : false;
-         modal.draggable( {
-         handle: '.fame-modal-header',
-         containment: containment,
-         }).resizable({
-         minWidth: 150
-         });
-         */
-        input_fields( modal );
-    }
 
     function setup_fields_data( fields, data_save ){
         if ( typeof data_save !== "object" ) {
@@ -395,21 +393,17 @@ jQuery( document ).ready( function ( $ ) {
 
     // Close modal
     function remove_modal(){
-        $('.fame-modal' ).remove();
+        $('.fame-item-modal' ).remove();
+        $('.fame-modal' ).hide();
         $( '.fame-modal-drop' ).remove();
-        $( this ).closest( '.fame-modal' ).remove();
     }
-    body.on( 'click', '.fame-modal .fame-modal-remove', function( e){
+    body.on( 'click', '.fame-modal .fame-modal-remove, .fame-modal-drop', function( e){
         e.preventDefault();
         remove_modal();
     } );
 
-    // Row modal
-    body.on( 'click', '.fame-row-settings', function( e){
-        e.preventDefault();
-    } );
-
-    // Item modal
+    
+    // Item settings modal
     body.on( 'click', '.fame-block-item .fame-item-settings', function( e){
         e.preventDefault();
         var item_id = 'text';
@@ -418,7 +412,7 @@ jQuery( document ).ready( function ( $ ) {
         open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
     } );
 
-    // Column modal
+    // Column settings modal
     body.on( 'click', '.fame-block-col .fame-col-settings', function( e){
         e.preventDefault();
         var data = FAME_BUILDER.col || {};
@@ -426,7 +420,7 @@ jQuery( document ).ready( function ( $ ) {
         open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
     } );
 
-    // Row modal
+    // Row settings modal
     body.on( 'click', '.fame-block-row .fame-row-settings', function( e){
         e.preventDefault();
         var data = FAME_BUILDER.row || {};
@@ -434,20 +428,162 @@ jQuery( document ).ready( function ( $ ) {
         open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
     } );
 
-    // Modal save
+    // Modal Row/Column/Item save
     body.on( 'click', '.fame-builder-save', function ( e ){
         e.preventDefault();
-        var data = $( 'form.fame-modal-body-inner' ).serializeObject();
-        fame_editing_item.prop( 'builder_data', data );
+        var old_data =  fame_editing_item.prop( 'builder_data' );
+        var new_data = $( 'form.fame-modal-body-inner' ).serializeObject();
+        new_data = $.extend( {}, old_data , new_data );
+        fame_editing_item.prop( 'builder_data', new_data );
         remove_modal();
         update_data();
+        body.trigger( 'builder_data_setting_update', [ fame_editing_item, new_data ] );
     } );
 
+    // Add new item
+
+    // Open modal add new item
+    fame_new_item_modal = get_template( 'fame-builder-add-items-tpl', {} );
+    $( '.fame-modal-drop' ).remove();
+    fame_new_item_modal = $( fame_new_item_modal );
+    fame_new_item_modal.hide();
+    $( 'body' ).append( fame_new_item_modal );
+    set_modal_size( fame_new_item_modal );
+    $( 'body' ).on( 'click', '.new-item', function( e ){
+        e.preventDefault();
+        $( 'body' ).append( '<div class="fame-modal-drop"></div>' );
+        fame_new_item_modal.show();
+    } );
+
+    $( 'body' ).on( 'click', '.fame-col-add.fame-add', function( e ){
+        e.preventDefault();
+        $( 'body' ).append( '<div class="fame-modal-drop"></div>' );
+        fame_new_item_modal.show();
+    } );
 
     // End modal
 
+    // Add new column
+    function new_item_object( settings ){
+        settings = $.extend( {}, {
+            _builder_type: 'item',
+        }, data );
+        data._builder_type = 'item';
+        var o = get_template( 'fame-builder-item-tpl', settings );
+        o = $( o );
+        o.prop( 'builder_data', settings );
+        return o;
+    }
+
+    // Add new column
+    function new_column_object( settings ){
+        settings = $.extend( {}, {
+            _builder_type: 'column',
+        }, settings );
+
+        settings._builder_type = 'column';
+
+        var c = get_template( 'fame-builder-col-tpl', settings );
+        c = $( c );
+        c.prop( 'builder_data', settings );
+        return c;
+    }
+
+    // Add new row
+    function new_row_object( settings ){
+        settings = $.extend( {}, {
+            _builder_type: 'row',
+        }, settings );
+        settings._builder_type = 'column';
+        var r = get_template( 'fame-builder-row-tpl', settings );
+        r = $( r );
+        r.prop( 'builder_data', settings );
+        return r;
+    }
+
+    function add_row_object( data ){
+        data = $.extend( {}, {
+            settings: {},
+            columns: [],
+            _builder_type: 'row',
+        }, data );
+
+        data.settings = $.extend( {}, {
+            columns: '',
+            title: '',
+            id: '',
+        }, data.settings );
+
+        var r = new_row_object( data.settings );
+
+        var num_col = string_to_number( data.settings.columns );
+        if ( num_col <= 0 ) {
+            num_col = 1;
+        }
+
+        var column_data, c;
+        for ( var i = 0; i < num_col; i++ ) {
+            if ( typeof data.columns[ i ] !== "undefined" ) {
+                column_data = data.columns[ i ];
+            } else {
+                column_data = {}
+            }
+
+            column_data = $.extend( {}, {
+                settings: {},
+                items: [],
+            }, column_data );
+
+            column_data.settings = $.extend( {}, {
+                title: '',
+                id: '',
+                _builder_type: 'column',
+            }, column_data.settings );
+
+            c = new_column_object( column_data.settings );
+            // check item
+
+            if ( typeof column_data.items !== 'array' ) {
+                column_data.items = [];
+            }
+            var item_data = {}, o;
+            for ( var j = 0; j < column_data.items.length; j++ ) {
+                if ( typeof column_data.items[ j ] !== "undefined" ) {
+                    item_data = column_data.items[ j ];
+                } else {
+                    item_data = {}
+                }
+                o = new_item_object( item_data );
+                $( '.block-col-inner', c ).append( o );
+            }
+
+            $( '.fame-block-body', r ).append( c );
+
+        }
+
+        return r;
+    }
 
 
+    $( 'body' ).on( 'click', '.new-row', function( e ){
+        e.preventDefault();
+
+        var r = add_row_object();
+        $( '.fame-builder-area' ).append( r );
+        sort_columns( r );
+    } );
+
+
+
+    // Event handle when data change
+
+   // fame_editing_item.trigger( 'builder_data_update', [ fame_editing_item, data] );
+
+    body.on( 'builder_data_setting_update', function( e, item, data ) {
+        if ( data._builder_type === 'row' ) {
+
+        }
+    } );
 
 
 
