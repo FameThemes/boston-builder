@@ -102,7 +102,7 @@
   display: table-cell;
   position: relative;
   height: 100%;
-  padding: 10px;
+  padding: 0px;
   vertical-align: top;
   min-height: 100px;
   background: #ffffff;
@@ -112,7 +112,7 @@
 }
 .fame-block-col .block-col-inner {
   height: 100%;
-  border: 1px solid #dddddd;
+  border: 10px solid #dddddd;
   min-height: 100px;
 }
 .fame-block-col.fame-placeholder {
