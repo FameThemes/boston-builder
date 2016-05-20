@@ -68,13 +68,27 @@ class Fame_Builder
         if ( self::is_active_builder() ) {
             ?>
             <script id="_wp-mce-editor-tpl" type="text/html">
-                <?php wp_editor('', '__wp_mce_editor__'); ?>
+                <?php
+                wp_editor('', '__wp_mce_editor__',
+                    array(
+                        '_content_editor_dfw' => true,
+                        'drag_drop_upload' => true,
+                        //'tabfocus_elements' => 'content-html,save-post',
+                        //'editor_height' => 300,
+                        'tinymce' => array(
+                            'resize' => false,
+                            'wp_autoresize_on' => true,
+                            'add_unload_trigger' => false,
+                        )
+                    )
+                );
+                ?>
             </script>
             <?php
         }
     }
 
-    function builder_css($hook)
+    function builder_css( $hook = '' )
     {
         if ( self::is_active_builder() ) {
             wp_enqueue_style('fame-builder', FAME_BUILDER_URL . 'admin/assets/css/builder.css');
