@@ -3,6 +3,7 @@
 class Fame_Builder
 {
     static $content_key = '_fame_builder_content';
+    static $content_type = '_fame_post_content';
     function __construct()
     {
         define('FAME_BUILDER_URL', self::get_url(__FILE__));
@@ -20,8 +21,10 @@ class Fame_Builder
         if ( is_string( $data ) ) {
             $data = json_decode( stripslashes_deep( $data ) , true );
         }
+        $type =  isset( $_REQUEST['fame_post_content_type'] ) ? $_REQUEST['fame_post_content_type'] : 'content';
 
         update_post_meta( $post_id, self::$content_key, $data );
+        update_post_meta( $post_id, self::$content_type, $type );
     }
 
     static function get_builder_content( $post_id = 0 ){
@@ -31,6 +34,15 @@ class Fame_Builder
         }
         return get_post_meta( $post_id, self::$content_key, true );
     }
+
+    static function get_content_type( $post_id = 0 ){
+        if ( ! $post_id ) {
+            global $post;
+            $post_id = $post->ID;
+        }
+        return get_post_meta( $post_id, self::$content_type, true );
+    }
+
     static function is_active_builder(){
         global $hook_suffix;
         $show = $hook_suffix == 'post.php' || $hook_suffix == 'post-new.php';
@@ -275,10 +287,16 @@ class Fame_Builder
             'row' => $this->get_row_config(),
             'col' => $this->get_col_config(),
             'items' => $this->get_items_config(),
-            'open_setting_when_new' => true,
+            'open_setting_when_new' => false,
+            'hide_switcher_if_template' => false,
+            'builder_templates' => array( // list files using page builder
+                "template-builder.php"
+            ),
             'texts' => array(
                 'confirm_remove' => __( 'Are you sure want to remove ?', 'textdomain' ),
                 'new_item_modal' => __( 'Add new item', 'textdomain' ),
+                'switch_builder' => __( 'Switch to builder', 'textdomain' ),
+                'switch_editor'  => __( 'Switch to editor', 'textdomain' ),
             ),
         ) );
         include dirname( __FILE__ ).'/admin/interface.php';

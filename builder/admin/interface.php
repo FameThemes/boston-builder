@@ -1,23 +1,31 @@
-<div class="fame-builder hide" style="display: none">
-    <div class="fame-builder-toolbar">
-        <div class="fame-builder-btn new-row" title="Add Rơ">
-            <?php _e( 'New row', 'textdomain' ); ?>
-        </div>
-        <?php /*
-        <div class="fame-builder-btn new-item" title="Add item">
-            <span class="dashicons dashicons-plus"></span>
-        </div>
-        */ ?>
-        <div class="fame-builder-btn" title="Templates">
-            <span class="dashicons dashicons-admin-page"></span>
-        </div>
-    </div>
-    <div class="fame-builder-area">
 
-    </div><!-- fame-builder-area -->
-    <input type="hidden" autocomplete="off" class="fame_builder_content" name="fame_builder_content" value="<?php echo esc_attr( json_encode( Fame_Builder::get_builder_content() ) ); ?>">
+<div class="fame-builder-switch">
+    <button class="fame-builder-switch-btn button button-secondary">Switch to builder</button>
 </div>
 
+<div class="fame-builder-wrap">
+    <div class="fame-builder hide" style="display: none">
+        <div class="fame-builder-toolbar">
+            <div class="fame-builder-btn new-row" title="Add Rơ">
+                <?php _e( 'New row', 'textdomain' ); ?>
+            </div>
+            <?php /*
+            <div class="fame-builder-btn new-item" title="Add item">
+                <span class="dashicons dashicons-plus"></span>
+            </div>
+            */ ?>
+            <div class="fame-builder-btn" title="Templates">
+                <span class="dashicons dashicons-admin-page"></span>
+            </div>
+        </div>
+        <div class="fame-builder-area">
+
+        </div><!-- fame-builder-area -->
+        <input type="hidden" autocomplete="off" class="fame_builder_content" name="fame_builder_content" value="<?php echo esc_attr( json_encode( Fame_Builder::get_builder_content() ) ); ?>">
+    </div>
+</div>
+
+<input type="hidden" autocomplete="off" id="fame_post_content_type" name="fame_post_content_type" value="<?php echo esc_attr( Fame_Builder::get_content_type() ); ?>">
 
 
 <script type="text/html" id="fame-builder-row-tpl">
@@ -155,7 +163,7 @@
                     } else {
                         values = item.value;
                     }
-                    
+
                     #>
                     <label>
                         <span>{{ item.title }}</span>

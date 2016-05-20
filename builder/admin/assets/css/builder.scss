@@ -2,6 +2,38 @@
   content: " "; display: block; clear: both;
 }
 
+.fame-builder-hide {
+  display: block;
+  height: 0px;
+  overflow: hidden;
+}
+
+#postdivrich.fame-editor-hide {
+  #wp-content-editor-container {
+    display: none !important;
+  }
+  #post-status-info, #wp-content-wrap {
+      display: none !important;
+  }
+}
+
+.fame-builder-switch {
+  padding-top: 20px;
+  padding-bottom: 15px;
+}
+.hide_switcher_if_template {
+  .fame-builder-switch {
+    display: none;
+  }
+  .fame-builder {
+    margin-top: 20px;
+  }
+}
+.fame-has-switcher {
+  #wp-content-editor-tools {
+    padding-top: 0px;
+  }
+}
 
 .fame-builder * {
   box-sizing: border-box;
