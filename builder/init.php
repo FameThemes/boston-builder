@@ -287,7 +287,7 @@ class Fame_Builder
             'row' => $this->get_row_config(),
             'col' => $this->get_col_config(),
             'items' => $this->get_items_config(),
-            'open_setting_when_new' => false,
+            'open_setting_when_new' => true,
             'hide_switcher_if_template' => true,
             'builder_templates' => array( // list files using page builder
                 "template-builder.php",
