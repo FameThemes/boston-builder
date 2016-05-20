@@ -107,14 +107,26 @@ class Fame_Builder
             'id' => 'image',
             'title' => esc_html__('Image', 'texdomain'),
             'icon'  => 'dashicons dashicons-format-image',
-            'preview' => '',
+            'preview' => '
+                  
+                        <div class="fame-media-preview <# if ( data.image.url ) { #> has-preview <# } #>"
+                        <# if ( data.image.type == \'\'  && data.image.url ) { #>
+                            style="background-image: url(\'{{ data.image.url }}\');"
+                        <# } #>
+                        >
+                            <# if ( data.image.type != \'\' && data.image.url ) { #>
+                                <video width="400" muted controls>
+                                    <source src="{{ data.image.url }}" type="{{ data.image.type }}">
+                                    '.esc_html__( 'Your browser does not support HTML5 video.', 'textdomain' ).'
+                                </video>
+                            <# } #>
+                        </div>',
             'fields' => array(
                 array(
-                    'id' => 'text',
-                    'type' => 'textarea',
-                    'title' => esc_html__('text', 'texdomain'),
-                    'desc' => __('Desc Here', 'texdomain'),
-                    'default' => __('Default value', 'texdomain'),
+                    'id' => 'image',
+                    'type' => 'media',
+                    'title' => esc_html__('Image', 'texdomain'),
+                    //'desc' => __('Desc Here', 'texdomain'),
                 )
             )
         );
@@ -249,7 +261,9 @@ class Fame_Builder
             'row' => $this->get_row_config(),
             'col' => $this->get_col_config(),
             'items' => $this->get_items_config(),
+            'open_setting_when_new' => true,
             'texts' => array(
+                'confirm_remove' => __( 'Are you sure want to remove ?', 'textdomain' ),
                 'new_item_modal' => __( 'Add new item', 'textdomain' ),
             ),
         ) );

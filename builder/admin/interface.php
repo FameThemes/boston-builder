@@ -42,9 +42,7 @@
     <?php // $col_config = Fame_Builder::get_col_config(); ?>
 
     <div class="fame-block-col">
-
         <div class="fame-col-toolbar fame-toolbar">
-
             <div class="fame-col-l fame-arrow-left"></div>
             <div class="fame-col-r fame-arrow-right"></div>
             <div class="fame-col-settings fame-settings"></div>
@@ -57,7 +55,6 @@
 
 <script type="text/html" id="fame-builder-item-tpl">
     <div data-id="{{ data.id }}" class="fame-block-item">
-        <#  console.log( data );  #>
         <div class="fame-item-toolbar fame-toolbar">
             <div class="fame-item-move fame-move"></div>
             <div class="fame-item-settings fame-edit"></div>
@@ -151,15 +148,36 @@
                     </label>
                 <#
                     break;
-                case 'media':  #>
+                case 'media':
+                    var values;
+                    if ( typeof( item.value ) !== "object" ) {
+                        values = {};
+                    } else {
+                        values = item.value;
+                    }
+                    
+                    #>
                     <label>
                         <span>{{ item.title }}</span>
                     </label>
                     <div class="fame-media">
-                        <div class="fame-media-preview"></div>
+                        <div class="fame-media-preview <# if ( values.url ) { #> has-preview <# } #>"
+                        <# if ( values.type == ''  && values.url ) { #>
+                            style="background-image: url('{{ values.url }}');"
+                        <# } #>
+                        >
+                            <# if ( values.type != '' && values.url ) { #>
+                                <video width="400" muted controls>
+                                    <source src="{{ values.url }}" type="{{ values.type }}">
+                                    <?php esc_html_e( 'Your browser does not support HTML5 video.', 'textdomain' ); ?>
+                                </video>
+                            <# } #>
+                        </div>
+
                         <div class="fame-media-remove"></div>
                         <input name="{{ item.id }}[id]" class="fame-attachment-id" type="hidden">
                         <input name="{{ item.id }}[url]" class="fame-attachment-url" type="hidden">
+                        <input name="{{ item.id }}[type]" class="fame-attachment-type" type="hidden">
                     </div>
                 <#
                     break;

@@ -2,37 +2,155 @@
  * Created by truongsa on 5/17/16.
  */
 
-/*!
- * jQuery serializeObject - v0.2 - 1/20/2010
- * http://benalman.com/projects/jquery-misc-plugins/
- *
- * Copyright (c) 2010 "Cowboy" Ben Alman
- * Dual licensed under the MIT and GPL licenses.
- * http://benalman.com/about/license/
+/**
+ * jQuery serializeObject
+ * @copyright 2014, macek <paulmacek@gmail.com>
+ * @link https://github.com/macek/jquery-serialize-object
+ * @license BSD
+ * @version 2.5.0
  */
+(function(root, factory) {
 
-// Whereas .serializeArray() serializes a form into an array, .serializeObject()
-// serializes a form into an (arguably more useful) object.
-
-(function($,undefined){
-    '$:nomunge'; // Used by YUI compressor.
-
-    $.fn.serializeObject = function(){
-        var obj = {};
-
-        $.each( this.serializeArray(), function(i,o){
-            var n = o.name,
-                v = o.value;
-
-            obj[n] = obj[n] === undefined ? v
-                : $.isArray( obj[n] ) ? obj[n].concat( v )
-                : [ obj[n], v ];
+    // AMD
+    if (typeof define === "function" && define.amd) {
+        define(["exports", "jquery"], function(exports, $) {
+            return factory(exports, $);
         });
+    }
 
-        return obj;
+    // CommonJS
+    else if (typeof exports !== "undefined") {
+        var $ = require("jquery");
+        factory(exports, $);
+    }
+
+    // Browser
+    else {
+        factory(root, (root.jQuery || root.Zepto || root.ender || root.$));
+    }
+
+}(this, function(exports, $) {
+
+    var patterns = {
+        validate: /^[a-z_][a-z0-9_]*(?:\[(?:\d*|[a-z0-9_]+)\])*$/i,
+        key:      /[a-z0-9_]+|(?=\[\])/gi,
+        push:     /^$/,
+        fixed:    /^\d+$/,
+        named:    /^[a-z0-9_]+$/i
     };
 
-})(jQuery);
+    function FormSerializer(helper, $form) {
+
+        // private variables
+        var data     = {},
+            pushes   = {};
+
+        // private API
+        function build(base, key, value) {
+            base[key] = value;
+            return base;
+        }
+
+        function makeObject(root, value) {
+
+            var keys = root.match(patterns.key), k;
+
+            // nest, nest, ..., nest
+            while ((k = keys.pop()) !== undefined) {
+                // foo[]
+                if (patterns.push.test(k)) {
+                    var idx = incrementPush(root.replace(/\[\]$/, ''));
+                    value = build([], idx, value);
+                }
+
+                // foo[n]
+                else if (patterns.fixed.test(k)) {
+                    value = build([], k, value);
+                }
+
+                // foo; foo[bar]
+                else if (patterns.named.test(k)) {
+                    value = build({}, k, value);
+                }
+            }
+
+            return value;
+        }
+
+        function incrementPush(key) {
+            if (pushes[key] === undefined) {
+                pushes[key] = 0;
+            }
+            return pushes[key]++;
+        }
+
+        function encode(pair) {
+            switch ($('[name="' + pair.name + '"]', $form).attr("type")) {
+                case "checkbox":
+                    return pair.value === "on" ? true : pair.value;
+                default:
+                    return pair.value;
+            }
+        }
+
+        function addPair(pair) {
+            if (!patterns.validate.test(pair.name)) return this;
+            var obj = makeObject(pair.name, encode(pair));
+            data = helper.extend(true, data, obj);
+            return this;
+        }
+
+        function addPairs(pairs) {
+            if (!helper.isArray(pairs)) {
+                throw new Error("formSerializer.addPairs expects an Array");
+            }
+            for (var i=0, len=pairs.length; i<len; i++) {
+                this.addPair(pairs[i]);
+            }
+            return this;
+        }
+
+        function serialize() {
+            return data;
+        }
+
+        function serializeJSON() {
+            return JSON.stringify(serialize());
+        }
+
+        // public API
+        this.addPair = addPair;
+        this.addPairs = addPairs;
+        this.serialize = serialize;
+        this.serializeJSON = serializeJSON;
+    }
+
+    FormSerializer.patterns = patterns;
+
+    FormSerializer.serializeObject = function serializeObject() {
+        return new FormSerializer($, this).
+        addPairs(this.serializeArray()).
+        serialize();
+    };
+
+    FormSerializer.serializeJSON = function serializeJSON() {
+        return new FormSerializer($, this).
+        addPairs(this.serializeArray()).
+        serializeJSON();
+    };
+
+    if (typeof $.fn !== "undefined") {
+        $.fn.serializeObject = FormSerializer.serializeObject;
+        $.fn.serializeJSON   = FormSerializer.serializeJSON;
+    }
+
+    exports.FormSerializer = FormSerializer;
+
+    return FormSerializer;
+}));
+
+
+// -------------------------------------
 
 
 function string_to_number( string ) {
@@ -263,35 +381,6 @@ jQuery( document ).ready( function ( $ ) {
             context = $( 'body' );
         }
 
-        /*
-        $(".fame-block-body", context ).sortable({
-            handle: '.fame-col-move',
-            placeholder: 'fame-block-col fame-placeholder',
-            forcePlaceholderSizeType: true,
-            forceHelperSize: true,
-            refreshPositions: true,
-            distance: 2,
-            tolerance: 'pointer',
-            zIndex: 99999,
-            //connectWith: ".fame-block-body",
-            // containment: "parent",
-            //helper: "clone",
-            start: function (event, ui) {
-                update_columns_class();
-            },
-            sort: function (event, ui) {
-                update_columns_class();
-            },
-            stop: function (event, ui) {
-                update_columns_class();
-            },
-            update: function( event, ui ) {
-                update_data();
-            }
-        });
-        */
-
-
         $(".block-col-inner", context ).sortable({
             handle: '.fame-item-move',
             ///placeholder: 'fame-block-item fame-placeholder',
@@ -323,8 +412,12 @@ jQuery( document ).ready( function ( $ ) {
     // When remove row
     body.on( 'click', '.fame-block-row .fame-row-remove', function( e ) {
         e.preventDefault();
-        $( this ).closest( '.fame-block-row ' ).remove();
-        update_data();
+        var c = confirm( FAME_BUILDER.texts.confirm_remove );
+        if ( c ) {
+            $( this ).closest( '.fame-block-row ' ).remove();
+            update_data();
+        }
+
     } );
 
 
@@ -358,11 +451,13 @@ jQuery( document ).ready( function ( $ ) {
             var p = fame_editing_media.closest('.fame-media');
             p.addClass( 'added' );
 
-            $('.fame-attachment-id', p).val(media_attachment.id);
-            $('.fame-attachment-url', p).val(img_url);
+            $('.fame-attachment-id', p ).val( media_attachment.id );
+            $('.fame-attachment-url', p ).val( img_url );
+
 
             if ( media_attachment.type == 'image' ) {
                 fame_editing_media.css('background-image', 'url("' + img_url + '")');
+                $( '.fame-attachment-type', p ).val( '' );
             } else if (media_attachment.type == 'video') {
                 preview = '<video width="400" muted controls>' +
                     '<source src="' + img_url + '" type="' + media_attachment.mime + '">' +
@@ -370,9 +465,12 @@ jQuery( document ).ready( function ( $ ) {
                     '</video>';
                 fame_editing_media.css('background-image', '');
                 fame_editing_media.html(preview);
+                $( '.fame-attachment-type', p ).val( media_attachment.mime );
             }
-        }
 
+
+        }
+        fame_editing_media.addClass( 'has-preview' );
         fame_editing_media = false;
 
     });
@@ -388,9 +486,10 @@ jQuery( document ).ready( function ( $ ) {
         e.preventDefault();
         var p = $( this ).closest( '.fame-media' );
         p.removeClass( 'added' );
-        p.find( '.fame-media-preview' ).css( 'background-image', '' ).html( '' );
+        p.find( '.fame-media-preview' ).removeClass( 'has-preview' ).css( 'background-image', '' ).html( '' );
         $( '.fame-attachment-id', p  ).val( '' );
         $( '.fame-attachment-url', p ).val( '' );
+        $( '.fame-attachment-type', p ).val( '' );
     } );
 
     function input_fields( $context ){
@@ -483,12 +582,11 @@ jQuery( document ).ready( function ( $ ) {
     // Item settings modal
     body.on( 'click', '.fame-block-item .fame-item-settings', function( e){
         e.preventDefault();
-        var item_id = 'text';
-        var data = get_item_by_id( item_id );
         fame_editing_item = $( this ).closest( '.fame-block-item' );
         var save_value = fame_editing_item.prop( 'builder_data' );
-        var d = setup_fields_data( data.fields, save_value );
-        open_modal( data, d );
+        var config = get_item_by_id( save_value._builder_id );
+        var d = setup_fields_data( config.fields, save_value );
+        open_modal( config, d );
     } );
 
     // Column settings modal
@@ -511,7 +609,8 @@ jQuery( document ).ready( function ( $ ) {
     body.on( 'click', '.fame-builder-save', function ( e ){
         e.preventDefault();
         var old_data =  fame_editing_item.prop( 'builder_data' );
-        var new_data = $( 'form.fame-modal-body-inner' ).serializeObject();
+        var new_data = $( 'form.fame-modal-body-inner', body ).serializeObject();
+
         new_data = $.extend( {}, old_data , new_data );
         fame_editing_item.prop( 'builder_data', new_data );
 
@@ -596,7 +695,7 @@ jQuery( document ).ready( function ( $ ) {
     function add_row_object( data ){
         data = $.extend( {}, {
             settings: {},
-            columns: [],
+            columns: 0,
         }, data );
 
         data.settings = $.extend( {}, {
@@ -605,12 +704,14 @@ jQuery( document ).ready( function ( $ ) {
             id: '',
         }, data.settings );
 
-        var r = new_row_object( data.settings );
-
         var num_col = string_to_number( data.settings.columns );
         if ( num_col <= 0 ) {
             num_col = FAME_BUILDER.default_row_col;
         }
+
+        data.settings.columns = num_col;
+
+        var r = new_row_object( data.settings );
 
         $( '.fame-block-body', r ).attr( 'data-columns', num_col );
 
@@ -668,7 +769,7 @@ jQuery( document ).ready( function ( $ ) {
 
     } );
 
-    // New item
+    // Open modal to add item
     body.on( 'click', '.fame-block-col .fame-add', function( e ){
         e.preventDefault();
         $( 'body' ).append( '<div class="fame-modal-drop"></div>' );
@@ -678,7 +779,7 @@ jQuery( document ).ready( function ( $ ) {
     } );
 
 
-    // Item selected
+    // Add item
     body.on( 'click', '.fame-add-item', function( e ){
         e.preventDefault();
         var item = $( this );
@@ -694,16 +795,33 @@ jQuery( document ).ready( function ( $ ) {
                         _builder_type: 'item',
                         _builder_id:   item_id,
                     };
-                    var c = new_item_object( data );
-                    $( '.block-col-inner', fame_selected_item ).append( c );
-                    fame_editing_item = false;
-                    //open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
+                    var new_item = new_item_object( data );
+                    $( '.block-col-inner', fame_selected_item ).append( new_item );
+
+                    if ( string_to_bool( FAME_BUILDER.open_setting_when_new ) ) {
+                        fame_editing_item = new_item;
+                        var save_value = fame_editing_item.prop('builder_data');
+                        var d = setup_fields_data(item_config.fields, save_value);
+                        open_modal(item_config, d);
+                    }
+
                 }
             }
         }
 
         update_data();
     } );
+
+    // Remove Item
+    body.on( 'click', '.fame-block-item .fame-item-remove', function( e ) {
+        e.preventDefault();
+        var c = confirm( FAME_BUILDER.texts.confirm_remove );
+        if ( c ) {
+            $( this ).closest( '.fame-block-item' ).remove();
+            update_data();
+        }
+    } );
+
 
     // when hit right col
     body.on( 'click', '.fame-block-col .fame-col-r', function( e ){
@@ -822,22 +940,23 @@ jQuery( document ).ready( function ( $ ) {
                     var n = string_to_number( data.columns );
                     var bd = $( '.fame-block-body', item );
                     var nc = $( '.fame-block-col', bd ).length;
+                    var c =  Math.round( FAME_BUILDER.max_columns / n );
                     bd.attr( 'data-columns', n );
+                    // Update column class
+                    $( '.fame-block-col', bd ).attr( 'data-col', c );
                     $( '.fame-block-col', bd ).each( function(){
                         var data = $( this ).prop( 'builder_data' );
-                        var c =  Math.round( FAME_BUILDER.max_columns / n );
                         data._builder_col = c;
-                        $( this ).attr( 'data-col', c );
+                        $( this ).prop( 'builder_data', data );
                     } );
 
                     var i ;
-                    if ( n > nc ) {
+                    if ( n > nc ) { // add new column
                         for ( i = 0; i < n - nc; i ++ ) {
-                            var tpl_c = new_column_object( { _builder_col: n, } );
-                            tpl_c.attr( 'data-col', n );
+                            var tpl_c = new_column_object( { _builder_col: c, } );
                             bd.append( tpl_c );
                         }
-                    } else  if ( nc > n ) {
+                    } else  if ( nc > n ) { // remove columns
 
                         for ( i = nc - 1; i > n - 1; i -- ) {
                             $( '.fame-block-col', bd ).eq( i ).remove();
