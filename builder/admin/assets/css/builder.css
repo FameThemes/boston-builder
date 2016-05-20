@@ -115,6 +115,7 @@
   border: 10px solid #ededed;
   border-right-width: 0px;
   min-height: 100px;
+  background: #ffffff;
 }
 .fame-block-col:last-child .block-col-inner {
   border-right-width: 10px;
@@ -197,6 +198,11 @@
   -o-transition: all 0.5s ease;
   -ms-transition: all 0.5s ease;
   transition: all 0.5s ease;
+}
+.fame-block-item.ui-sortable-placeholder {
+  min-width: 100px;
+  display: block;
+  visibility: visible !important;
 }
 .fame-block-item:first-child {
   border-top: 0px none;

@@ -119,6 +119,7 @@
     border: 10px solid #ededed;
     border-right-width: 0px;
     min-height: 100px;
+    background: #ffffff;
   }
   &:last-child {
      .block-col-inner {
@@ -167,6 +168,12 @@
     -o-transition: all 0.5s ease;
     -ms-transition: all 0.5s ease;
     transition: all 0.5s ease;
+  }
+
+  &.ui-sortable-placeholder {
+    min-width: 100px;
+    display: block;
+    visibility: visible !important;
   }
 
   //border: 1px solid #dddddd;

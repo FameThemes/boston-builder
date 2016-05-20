@@ -299,7 +299,7 @@ jQuery( document ).ready( function ( $ ) {
             forceHelperSize: true,
             refreshPositions: true,
             distance: 2,
-            tolerance: 'pointer',
+            tolerance: 'pointer', // intersect | pointer
             zIndex: 99999,
             connectWith: '.block-col-inner',
             // containment: "parent",
