@@ -3,9 +3,11 @@
         <div class="fame-builder-btn new-row" title="Add Rơ">
             <?php _e( 'New row', 'textdomain' ); ?>
         </div>
+        <?php /*
         <div class="fame-builder-btn new-item" title="Add item">
             <span class="dashicons dashicons-plus"></span>
         </div>
+        */ ?>
         <div class="fame-builder-btn" title="Templates">
             <span class="dashicons dashicons-admin-page"></span>
         </div>
@@ -15,7 +17,6 @@
     </div><!-- fame-builder-area -->
     <input type="hidden" autocomplete="off" class="fame_builder_content" name="fame_builder_content" value="<?php echo esc_attr( json_encode( Fame_Builder::get_builder_content() ) ); ?>">
 </div>
-
 
 
 
@@ -59,7 +60,7 @@
     <div data-id="{{ data.id }}" class="fame-block-item">
         <div class="fame-item-toolbar fame-toolbar">
             <div class="fame-item-move fame-move"></div>
-            <div class="fame-item-settings fame-settings"></div>
+            <div class="fame-item-settings fame-edit"></div>
         </div>
         <# if ( data.preview ) {  #>
         <div class="fame-item-preview"></div>
