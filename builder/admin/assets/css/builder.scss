@@ -110,15 +110,20 @@
 
   vertical-align: top;
   min-height: 100px;
-  background: #ffffff;
+  background: #ededed;
   &:hover {
     //background: #f5f5f5;
   }
   .block-col-inner {
     height: 100%;
-    border: 10px solid #dddddd;
-    //display: block;
+    border: 10px solid #ededed;
+    border-right-width: 0px;
     min-height: 100px;
+  }
+  &:last-child {
+     .block-col-inner {
+       border-right-width: 10px;
+     }
   }
   &.fame-placeholder {
     background: #f5f5f5;
@@ -167,7 +172,7 @@
   //border: 1px solid #dddddd;
   background: #ffffff;
   padding: 10px;
-  border-top: 10px solid #dddddd;
+  border-top: 10px solid #ededed;
   &:first-child {
     border-top: 0px none;
   }
