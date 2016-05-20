@@ -288,9 +288,11 @@ class Fame_Builder
             'col' => $this->get_col_config(),
             'items' => $this->get_items_config(),
             'open_setting_when_new' => false,
-            'hide_switcher_if_template' => false,
+            'hide_switcher_if_template' => true,
             'builder_templates' => array( // list files using page builder
-                "template-builder.php"
+                "template-builder.php",
+                "tpl-builder.php",
+                "builder.php"
             ),
             'texts' => array(
                 'confirm_remove' => __( 'Are you sure want to remove ?', 'textdomain' ),

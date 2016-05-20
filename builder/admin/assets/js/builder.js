@@ -243,39 +243,44 @@ jQuery( document ).ready( function ( $ ) {
         if ( editor_type == 'builder' ) {
             $( '#postdivrich' ).addClass( 'fame-editor-hide' );
             $( '.fame-builder-wrap' ).removeClass( 'fame-builder-hide' );
+            $( '.fame-builder-switch-btn' ).html( FAME_BUILDER.texts.switch_editor );
+
         } else {
             $( '#postdivrich' ).removeClass( 'fame-editor-hide' );
             $( '.fame-builder-wrap' ).addClass( 'fame-builder-hide' );
+
+            $( '.fame-builder-switch-btn' ).html( FAME_BUILDER.texts.switch_builder );
         }
         $( '#fame_post_content_type' ).val( editor_type );
         $( window ).trigger( 'resize' );
+
+
     }
     $( '.fame-builder' ).removeAttr( 'style' ).removeClass( 'hide' );
 
     switch_content_editor( $( '#fame_post_content_type' ).val() || '' );
+
     body.on( 'click', '.fame-builder-switch-btn', function( e ) {
         e.preventDefault();
         var t = $( '#fame_post_content_type' ).val() || '';
         if ( t == 'builder' ) {
             t = 'editor';
-            $( this ).html( FAME_BUILDER.texts.switch_builder );
         } else {
             t = 'builder';
-            $( this ).html( FAME_BUILDER.texts.switch_editor );
         }
-
         switch_content_editor( t );
-
     } );
 
-    // Check page builder
 
     if ( $( '#page_template' , body ).length > 0 ) {
+
+        // Check page builder
         if ( FAME_BUILDER.hide_switcher_if_template ) {
             body.addClass( 'hide_switcher_if_template' );
         } else {
             body.addClass( 'fame-has-switcher' );
         }
+
         $( '#page_template' , body ).on( 'change', function(){
             //console.log( 'dsdsa change' );
             var v = $( this ).val();
@@ -286,12 +291,14 @@ jQuery( document ).ready( function ( $ ) {
             }
         } );
 
-        $( '#page_template' , body ).trigger( 'change' );
+        if ( FAME_BUILDER.hide_switcher_if_template ) {
+            $( '#page_template' , body ).trigger( 'change' );
+        }
 
+    } else {
+        body.addClass( 'fame-has-switcher' );
     }
-
-
-
+    
 
     function get_template( tmpl_id, data ){
         if ( typeof data === "undefined" ) {
