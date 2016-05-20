@@ -48,7 +48,6 @@
 
 <script type="text/html" id="fame-builder-col-tpl">
     <?php // $col_config = Fame_Builder::get_col_config(); ?>
-
     <div class="fame-block-col">
         <div class="fame-col-toolbar fame-toolbar">
             <div class="fame-col-l fame-arrow-left"></div>

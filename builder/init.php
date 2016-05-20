@@ -281,7 +281,7 @@ class Fame_Builder
         wp_enqueue_script( 'fame-editor', FAME_BUILDER_URL.'admin/assets/js/editor.js', array( 'jquery' ), false, true );
         wp_enqueue_script( 'fame-builder', FAME_BUILDER_URL.'admin/assets/js/builder.js', array( 'jquery' ), false, true );
         wp_localize_script( 'fame-builder', 'FAME_BUILDER', array(
-            'default_row_col' => 2, // 50%
+            'default_row_col' => 1, // 50%
             'max_columns' => 12,
             'min_columns' => 2, //
             'row' => $this->get_row_config(),
