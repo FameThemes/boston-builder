@@ -182,7 +182,7 @@
 .fame-block-item {
   background: #ffffff;
   padding: 10px;
-  border-top: 1px dashed #dddddd;
+  border-top: 10px solid #dddddd;
   position: relative;
   min-height: 100px;
   display: block;
