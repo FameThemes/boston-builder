@@ -82,7 +82,7 @@ jQuery( document ).ready( function ( $ ) {
     // Fixed toolbar
 
     function set_toolbar(){
-        var toolbar = $( '.fame-builder-toolbar' );
+        var toolbar = $( '.fame-builder-toolbar', body );
         toolbar.wrap( '<div class="fame-builder-toolbar-wrap"></div>' );
         var toolbar_wrap = toolbar.parent();
         toolbar_wrap.height( toolbar.outerHeight() );
@@ -94,12 +94,16 @@ jQuery( document ).ready( function ( $ ) {
         } );
         $( window ).scroll( function(){
             var st = $( window ) .scrollTop();
-            var l = toolbar_wrap.offset().left;
             var t = 0;
             if ( $( '#wpadminbar' ).css( 'position' ) === 'fixed' ) {
                 t = $( '#wpadminbar' ).height();
             }
-            if ( st > toolbar_wrap.offset().top - t ) {
+
+            var max_top = $( '.fame-builder', body ).offset().top;
+            max_top += $( '.fame-builder', body ).height();
+            max_top -= toolbar.height();
+
+            if ( st > toolbar_wrap.offset().top - t && st < max_top) {
                 toolbar_wrap.addClass( 'fame-fixed' );
                 toolbar.css( { top:  t+'px' } );
             } else {
@@ -146,6 +150,14 @@ jQuery( document ).ready( function ( $ ) {
         if ( typeof data === "undefined" ) {
             data = {};
         }
+
+        $.each( data, function( key, val ) {
+            if ( typeof val === 'string' ) {
+                data[ key ] = window.switchEditors._wp_Autop( val );
+            }
+        } );
+
+
         /**
          * Function that loads the Mustache template
          */
@@ -281,8 +293,8 @@ jQuery( document ).ready( function ( $ ) {
 
 
         $(".block-col-inner", context ).sortable({
-            //handle: '.block-col-inner',
-            //placeholder: 'fame-block-col fame-placeholder',
+            handle: '.fame-item-move',
+            ///placeholder: 'fame-block-item fame-placeholder',
             forcePlaceholderSizeType: true,
             forceHelperSize: true,
             refreshPositions: true,
@@ -540,6 +552,12 @@ jQuery( document ).ready( function ( $ ) {
         if ( typeof config.preview !== "undefined" ){
             var preview = render_template_by_html( config.preview, save_values );
             $( '.fame-item-preview', o ).html( preview );
+            var content = $( '.fame-item-preview', o ).html();
+            if ( content && content.trim() !== '' ) {
+                o.addClass( 'has-preview' );
+            } else {
+                o.removeClass( 'has-preview' );
+            }
         }
 
         o.prop( 'builder_data', save_values );
@@ -834,6 +852,13 @@ jQuery( document ).ready( function ( $ ) {
                     var preview = '';
                     preview = render_template_by_html( config.preview, data );
                     $( '.fame-item-preview', item ).html( preview );
+
+                    var content = $( '.fame-item-preview', item ).html();
+                    if ( content && content.trim() !== '' ) {
+                        item.addClass( 'has-preview' );
+                    } else {
+                        item.removeClass( 'has-preview' );
+                    }
                 }
                 break;
 

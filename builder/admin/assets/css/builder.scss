@@ -89,45 +89,57 @@
 }
 .fame-block-body-wrap {
   padding: 0px;
+  min-height: 100px;
+  display: block;
 }
 .fame-block-body {
   display: table;
   width: 100%;
   min-height: 100px;
+  height: 100%;
 }
 
 .fame-block-col {
   display: table-cell;
   position: relative;
+  height: 100%;
   padding: 10px;
   &.first {
     clear: left;
   }
 
-  //border-collapse: collapse;
   vertical-align: top;
   min-height: 100px;
   background: #ffffff;
   &:hover {
-    background: #f5f5f5;
+    //background: #f5f5f5;
   }
   .block-col-inner {
+    height: 100%;
+    border: 1px solid #dddddd;
+    //display: block;
     min-height: 100px;
   }
   &.fame-placeholder {
     background: #f5f5f5;
   }
-}
-@for $i from 1 through 12 {
-  .fame-block-body[data-columns="#{$i}"] {
-      .fame-block-col {
-        width: (100% / $i);
-       // &:nth-child(#{$i}n+1 ) {
-         //clear: left;
-       // }
-      }
+
+  .fame-col-toolbar {
+    position: absolute;
+    top: -20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none;
+    min-width: 125px;
+    z-index: 9999;
+  }
+  &:hover {
+    .fame-col-toolbar {
+      display: block;
+    }
   }
 }
+
 
 @for $i from 1 through 12 {
   .fame-block-body {
@@ -140,16 +152,87 @@
   }
 }
 
-// data-col
 
+/// Item style
 .fame-block-item {
-  border: 1px solid #dddddd;
+
+  * {
+    -webkit-transition: all 0.5s ease;
+    -moz-transition: all 0.5s ease;
+    -o-transition: all 0.5s ease;
+    -ms-transition: all 0.5s ease;
+    transition: all 0.5s ease;
+  }
+
+  //border: 1px solid #dddddd;
   background: #ffffff;
   padding: 10px;
-  margin-bottom: 10px;
-  &:last-child {
-    margin-bottom: 0px;
+  border-top: 1px dashed #dddddd;
+  &:first-child {
+    border-top: 0px none;
   }
+  position: relative;
+  min-height: 100px;
+  display: block;
+  &:hover {
+    .fame-item-toolbar {
+      opacity: 1;
+    }
+  }
+
+  .fame-item-toolbar {
+    text-align: right;
+    opacity: 0;
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    right: 0px;
+    bottom: 0px;
+    background: rgba( 0, 0, 0, .3 );
+    .fame-item-move {
+      float: left;
+    }
+  }
+
+  .fame-item-icon {
+    background: #ffffff;
+    width: 50px;
+    height: 50px;
+    line-height: 50px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin-left: -25px;
+    margin-top: -25px;
+    cursor: pointer;
+    border: 1px solid #dddddd;
+    -webkit-box-shadow: 2px 4px 11px 0px rgba(0,0,0,0.57);
+    -moz-box-shadow: 2px 4px 11px 0px rgba(0,0,0,0.57);
+    box-shadow: 2px 4px 11px 0px rgba(0,0,0,0.57);
+    .fame-add-icon {
+      width: 100%;
+      height: 100%;
+      display: block;
+      &:before {
+        line-height: 50px;
+        width: 50px;
+        font-size: 24px;
+        text-align: center;
+      }
+    }
+  }
+
+  &.has-preview {
+    .fame-item-icon {
+      opacity: 0;
+    }
+    &:hover {
+      .fame-item-icon {
+        opacity: 1;
+      }
+    }
+  }
+
 }
 
 
@@ -450,79 +533,3 @@
 
 }
 
-
-
-
-
-
-/*  JQuery UI Resizeable */
-.ui-resizable {
-  position: relative;
-}
-.ui-resizable-handle {
-  position: absolute;
-  font-size: 0.1px;
-  display: block;
-  -ms-touch-action: none;
-  touch-action: none;
-}
-.ui-resizable-disabled .ui-resizable-handle,
-.ui-resizable-autohide .ui-resizable-handle {
-  display: none;
-}
-.ui-resizable-n {
-  cursor: n-resize;
-  height: 7px;
-  width: 100%;
-  top: -5px;
-  left: 0;
-}
-.ui-resizable-s {
-  cursor: s-resize;
-  height: 7px;
-  width: 100%;
-  bottom: -5px;
-  left: 0;
-}
-.ui-resizable-e {
-  cursor: e-resize;
-  width: 7px;
-  right: -5px;
-  top: 0;
-  height: 100%;
-}
-.ui-resizable-w {
-  cursor: w-resize;
-  width: 7px;
-  left: -5px;
-  top: 0;
-  height: 100%;
-}
-.ui-resizable-se {
-  cursor: se-resize;
-  width: 12px;
-  height: 12px;
-  right: 1px;
-  bottom: 1px;
-}
-.ui-resizable-sw {
-  cursor: sw-resize;
-  width: 9px;
-  height: 9px;
-  left: -5px;
-  bottom: -5px;
-}
-.ui-resizable-nw {
-  cursor: nw-resize;
-  width: 9px;
-  height: 9px;
-  left: -5px;
-  top: -5px;
-}
-.ui-resizable-ne {
-  cursor: ne-resize;
-  width: 9px;
-  height: 9px;
-  right: -5px;
-  top: -5px;
-}

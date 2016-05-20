@@ -91,7 +91,7 @@ class Fame_Builder
             'id' => 'text',
             'title' => esc_html__('Text', 'texdomain'),
             'icon'  => 'dashicons dashicons-editor-alignleft',
-            'preview' => ' {{ data.text }}',
+            'preview' => ' {{{ data.text }}}',
             'fields' => array(
                 array(
                     'id' => 'text',
@@ -159,9 +159,12 @@ class Fame_Builder
                 'id' => '',
                 'title' => '',
                 'icon' => '',
+                'icon_type' => '', // can be url or icon
                 'preview' => '',
                 'fields' => array(),
             ) );
+
+            $item['icon_type'] = ( filter_var( $item['icon'] , FILTER_VALIDATE_URL ) ) ? 'url' : 'icon' ;
             $new_array[ $item['id'] ] = $item;
         }
 

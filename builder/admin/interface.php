@@ -40,28 +40,36 @@
 
 <script type="text/html" id="fame-builder-col-tpl">
     <?php // $col_config = Fame_Builder::get_col_config(); ?>
+
     <div class="fame-block-col">
+
         <div class="fame-col-toolbar fame-toolbar">
-            <?php /*
-            <div class="fame-col-move fame-move"></div>
-            */ ?>
+
             <div class="fame-col-l fame-arrow-left"></div>
             <div class="fame-col-r fame-arrow-right"></div>
-
-
             <div class="fame-col-settings fame-settings"></div>
             <div class="fame-col-add fame-add"></div>
         </div>
+
         <div class="block-col-inner"></div>
     </div>
 </script>
 
 <script type="text/html" id="fame-builder-item-tpl">
     <div data-id="{{ data.id }}" class="fame-block-item">
+        <#  console.log( data );  #>
         <div class="fame-item-toolbar fame-toolbar">
             <div class="fame-item-move fame-move"></div>
             <div class="fame-item-settings fame-edit"></div>
+            <div class="fame-item-remove fame-remove"></div>
         </div>
+
+        <div class="fame-item-settings fame-item-icon"  <# if ( data.icon_type == 'url' ) { #> style="background-image: url( '{{ data.icon }}' );" <# } #> >
+            <# if ( data.icon_type != 'url' ) { #>
+                <span class="fame-add-icon {{ data.icon }}"></span>
+            <# } #>
+        </div>
+
         <# if ( data.preview ) {  #>
         <div class="fame-item-preview"></div>
         <# } #>
@@ -99,17 +107,17 @@
                         $items = Fame_Builder::get_items_config();
                         foreach ( $items as $id => $item ) {
 
-                            $is_url = filter_var( $item['icon'] , FILTER_VALIDATE_URL );
                             $style = '';
-                            if ( $is_url ) {
-                                $style = ' style="background-image: url(\''.esc_url( $is_url ).'\');" ';
+                            if ( $item['icon_type'] == 'url' ) {
+                                $style = ' style="background-image: url(\''.esc_url( $item['icon'] ).'\');" ';
                             }
 
                             ?>
                             <div class="fame-add-item" data-id="<?php echo esc_attr( $item['id'] ) ?>">
                                 <div class="fame-add-item-inner">
                                     <div class="fame-add-thumb"<?php echo $style; ?>>
-                                        <?php if ( ! $is_url ) { ?>
+                                        <?php
+                                        if ( $item['icon_type'] != 'url' ) { ?>
                                             <span class="fame-add-icon <?php echo esc_attr( $item['icon'] ); ?>"></span>
                                         <?php } ?>
                                     </div>
