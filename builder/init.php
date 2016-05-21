@@ -134,20 +134,17 @@ class Fame_Builder
             'title' => esc_html__('Image', 'texdomain'),
             'icon'  => 'dashicons dashicons-format-image',
             'preview' => '
-                        <# if ( data.image ) { #>
-                        <div class="fame-media-preview <# if ( data.image.url ) { #> has-preview <# } #>"
-                        <# if ( data.image.type == \'\'  && data.image.url ) { #>
-                            style="background-image: url(\'{{ data.image.url }}\');"
-                        <# } #>
-                        >
-                            <# if ( data.image.type != \'\' && data.image.url ) { #>
-                                <video width="400" muted controls>
-                                    <source src="{{ data.image.url }}" type="{{ data.image.type }}">
-                                    '.esc_html__( 'Your browser does not support HTML5 video.', 'textdomain' ).'
-                                </video>
-                            <# } #>
-                        </div>
-                        <# } #>',
+                <# if ( data.image ) { #>
+                    <# if ( data.image.type == \'\'  && data.image.url ) { #>
+                        <img src="{{ data.image.url }}" alt="">
+                    <# } #>
+                    <# if ( data.image.type != \'\' && data.image.url ) { #>
+                        <video width="400" muted controls>
+                            <source src="{{ data.image.url }}" type="{{ data.image.type }}">
+                            '.esc_html__( 'Your browser does not support HTML5 video.', 'textdomain' ).'
+                        </video>
+                    <# } #>
+                <# } #>',
             'fields' => array(
                 array(
                     'id' => 'image',

@@ -1002,7 +1002,7 @@ jQuery( document ).ready( function ( $ ) {
         }, data );
 
         switch ( data._builder_type ) {
-            case 'row':
+            case 'row': // when row settings changed
                 if ( typeof data.columns !== "undefined" ) {
                     var n = string_to_number( data.columns );
                     var bd = $( '.fame-block-body', item );
@@ -1024,10 +1024,31 @@ jQuery( document ).ready( function ( $ ) {
                             bd.append( tpl_c );
                         }
                     } else  if ( nc > n ) { // remove columns
+                        // before remove columns
+                        // Move existing items columns that remove
+                        var j = nc - 2;
+                        var backup_items = [];
+                        if (  j < 0 ) {
+                            j = 0;
+                        }
+                        // copy items form removing columns
+                        for ( i = nc - 1; i > n - 1; i -- ) {
+                            $( '.fame-block-col', bd ).eq( i ).find( '.fame-block-item' ).each( function(){
+                                var item = $( this ).clone();
+                                item.prop( 'builder_data', $( this ).prop( 'builder_data' ) );
+                                backup_items.push( item );
+                            } );
+                        }
+                        $.each( backup_items, function( index, child ) {
+                            $( '.fame-block-col .block-col-inner', bd ).eq( j ).append( child );
+                        } );
 
+                        // Remove column
                         for ( i = nc - 1; i > n - 1; i -- ) {
                             $( '.fame-block-col', bd ).eq( i ).remove();
                         }
+
+                        update_data();
                     }
                 }
                 break;
