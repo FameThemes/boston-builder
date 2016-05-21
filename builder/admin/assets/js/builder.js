@@ -157,12 +157,15 @@ function string_to_number( string ) {
     if ( typeof string === 'number' ) {
         return string;
     }
-    var n  = string.match(/\d+$/);
-    if ( n ) {
-        return parseFloat( n[0] );
-    } else {
-        return 0;
+    if ( typeof string === 'string' ) {
+        var n = string.match(/\d+$/);
+        if (n) {
+            return parseFloat(n[0]);
+        } else {
+            return 0;
+        }
     }
+    return 0;
 }
 
 function string_to_bool( v ) {
@@ -248,13 +251,12 @@ jQuery( document ).ready( function ( $ ) {
         } else {
             $( '#postdivrich' ).removeClass( 'fame-editor-hide' );
             $( '.fame-builder-wrap' ).addClass( 'fame-builder-hide' );
-
             $( '.fame-builder-switch-btn' ).html( FAME_BUILDER.texts.switch_builder );
+
         }
         $( '#fame_post_content_type' ).val( editor_type );
+        body.trigger( 'fame_editor_changed', [ editor_type ] );
         $( window ).trigger( 'resize' );
-
-
     }
     $( '.fame-builder' ).removeAttr( 'style' ).removeClass( 'hide' );
 
@@ -645,6 +647,13 @@ jQuery( document ).ready( function ( $ ) {
         remove_modal();
     } );
 
+    // Remove Modal
+    $( document).on( 'keydown', function(e ) {
+        if ( e.which === 27 ) {
+            remove_modal();
+        }
+    } );
+
     
     // Item settings modal
     body.on( 'click', '.fame-block-item .fame-item-settings', function( e){
@@ -734,6 +743,7 @@ jQuery( document ).ready( function ( $ ) {
     function new_column_object( settings ){
         settings = $.extend( {}, {
             _builder_type: 'column',
+            _builder_title: '',
             _builder_col: Math.round( FAME_BUILDER.max_columns / FAME_BUILDER.default_row_col ),
         }, settings );
 
@@ -750,6 +760,7 @@ jQuery( document ).ready( function ( $ ) {
     function new_row_object( settings ){
         settings = $.extend( {}, {
             _builder_type: 'row',
+            _builder_title: '',
         }, settings );
         settings._builder_type = 'row';
         var r = get_template( 'fame-builder-row-tpl', settings );
@@ -762,7 +773,7 @@ jQuery( document ).ready( function ( $ ) {
     function add_row_object( data ){
         data = $.extend( {}, {
             settings: {},
-            columns: 0,
+            columns: [],
         }, data );
 
         data.settings = $.extend( {}, {
@@ -1017,6 +1028,9 @@ jQuery( document ).ready( function ( $ ) {
                         $( this ).prop( 'builder_data', data );
                     } );
 
+                    console.log( typeof  data.columns );
+                    console.log(  n + '---' + nc );
+
                     var i ;
                     if ( n > nc ) { // add new column
                         for ( i = 0; i < n - nc; i ++ ) {
@@ -1074,6 +1088,50 @@ jQuery( document ).ready( function ( $ ) {
     } );
 
     // When page load
+
+    // check content
+    body.on( 'fame_editor_changed', function(){
+        var post_content = $( '#content' ).val();
+        var data = $( '.fame_builder_content', body ).val();
+
+        var r, c;
+        try {
+            data = JSON.parse( data );
+        } catch ( e ) {
+            data = {};
+        }
+
+        if ( post_content && $.isEmptyObject( data ) ) {
+
+            var row_data =  {
+                _builder_type: 'row',
+                _builder_title: '',
+                columns: 1,
+                title: '',
+                id: '',
+            };
+            var col_data = {
+                _builder_type: 'column',
+                _builder_title: '',
+                _builder_col: 12,
+            };
+            var item_data = {
+                _builder_type: 'item',
+                _builder_id:   'text',
+                text: post_content
+            };
+
+            r = new_row_object( row_data );
+            r.prop( 'builder_data', row_data );
+            c = new_column_object( col_data );
+            $( '.fame-builder-area', body ).html( r );
+            $( '.fame-block-body', r ).html( c );
+            $( '.block-col-inner', c ).html(  new_item_object( item_data ) );
+        }
+    } );
+
+    body.trigger( 'fame_editor_changed' );
+
     var data = $( '.fame_builder_content', body ).val();
     try {
         data = JSON.parse( data );
