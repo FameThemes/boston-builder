@@ -634,6 +634,49 @@
 
 }
 
+/* Modal  new template */
+.fame-list-templates {
+  .tpl-item {
+    display: table;
+    width: 100%;
+    border: 1px solid #dddddd;
+    cursor: pointer;
+    &:hover {
+      background: #f5f5f5;
+    }
+    &:first-child {
+      border-bottom-width: 0px;
+      &:last-child {
+        border-bottom-width: 1px;
+      }
+    }
+    &:after {
+      @include cleafix();
+    }
+    > div {
+      display: table-cell;
+      padding:  10px;
+      vertical-align: middle;
+    }
+  }
+  .tpl-item-id {
+    width: 50px;
+    border-right: 1px solid #dddddd;
+    text-align: right;
+    font-weight: bold;
+  }
+  .tpl-item-add {
+    text-align: right;
+    width: 20px;
+    font-size: 16px;
+    vertical-align: middle;
+     &:before {
+       font-family: "dashicons";
+       content: "\f132";
+       vertical-align: middle;
+     }
+  }
+}
 
 /* Preview */
 .fame-item-preview {

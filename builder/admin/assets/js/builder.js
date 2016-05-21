@@ -197,6 +197,7 @@ jQuery( document ).ready( function ( $ ) {
         fame_editing_item = false,
         fame_selected_item = false,
         fame_new_item_modal,
+        fame_defined_templates,
         builder_area = $( '.fame-builder-area' );
 
     // Fixed toolbar
@@ -494,21 +495,20 @@ jQuery( document ).ready( function ( $ ) {
      *  Input fields -----------------------------------------------
      */
 
-    // Wp upload
+    fame_editing_media = false;
+
+    // Wp upload single
     var frame = wp.media({
         title: wp.media.view.l10n.addMedia,
         multiple: false,
         //library: {type: 'all' },
         //button : { text : 'Insert' }
     });
-
     frame.on('close', function () {
         // get selections and save to hidden input plus other AJAX stuff etc.
         //var selection = frame.state().get('selection');
         // console.log(selection);
     });
-
-    fame_editing_media = false;
 
     frame.on( 'select', function () {
         // Grab our attachment selection and construct a JSON representation of the model.
@@ -536,14 +536,10 @@ jQuery( document ).ready( function ( $ ) {
                 fame_editing_media.html(preview);
                 $( '.fame-attachment-type', p ).val( media_attachment.mime );
             }
-
-
         }
         fame_editing_media.addClass( 'has-preview' );
         fame_editing_media = false;
-
     });
-
 
     // Image handle
     body.on( 'click', '.fame-media-preview', function( e ) {
@@ -560,6 +556,9 @@ jQuery( document ).ready( function ( $ ) {
         $( '.fame-attachment-url', p ).val( '' );
         $( '.fame-attachment-type', p ).val( '' );
     } );
+    
+
+
 
     function input_fields( $context ){
         $( '.color-picker', $context ).wpColorPicker();
@@ -636,11 +635,9 @@ jQuery( document ).ready( function ( $ ) {
     // Close modal
     function remove_modal(){
         $( '.fame-modal-item.type-editor .wp-editor-area', body ).wp_js_editor( 'remove' );
-
         $('.fame-item-modal' , body ).hide();
         $('.fame-modal', body ).hide();
         $( '.fame-modal-drop', body ).remove();
-
     }
     body.on( 'click', '.fame-modal .fame-modal-remove, .fame-modal-drop', function( e){
         e.preventDefault();
@@ -698,16 +695,30 @@ jQuery( document ).ready( function ( $ ) {
 
     // Open modal add new item
     fame_new_item_modal = get_template( 'fame-builder-add-items-tpl', {} );
-    $( '.fame-modal-drop' ).remove();
     fame_new_item_modal = $( fame_new_item_modal );
     fame_new_item_modal.hide();
     body.append( fame_new_item_modal );
     set_modal_size( fame_new_item_modal );
+    /*
     body.on( 'click', '.new-item', function( e ){
         e.preventDefault();
         body.append( '<div class="fame-modal-drop"></div>' );
         fame_new_item_modal.show();
     } );
+    */
+
+    // Defined templates
+    fame_defined_templates = get_template( 'fame-builder-templates-tpl', FAME_BUILDER.defined_templates );
+    fame_defined_templates = $( fame_defined_templates );
+    fame_defined_templates.hide();
+    body.append( fame_defined_templates );
+    set_modal_size( fame_defined_templates );
+    body.on( 'click', '.fame-import-btn', function( e ){
+        e.preventDefault();
+        body.append( '<div class="fame-modal-drop"></div>' );
+        fame_defined_templates.show();
+    } );
+
     // End modal
 
     // Add new column
@@ -900,7 +911,6 @@ jQuery( document ).ready( function ( $ ) {
         }
     } );
 
-
     // when hit right col
     body.on( 'click', '.fame-block-col .fame-col-r', function( e ){
         e.preventDefault();
@@ -1003,8 +1013,6 @@ jQuery( document ).ready( function ( $ ) {
 
 
     // Event handle when data change
-   // fame_editing_item.trigger( 'builder_data_update', [ fame_editing_item, data] );
-
     body.on( 'builder_data_setting_update', function( e, item, data ) {
         data = $.extend( {}, {
             id: '',
@@ -1087,8 +1095,26 @@ jQuery( document ).ready( function ( $ ) {
 
     } );
 
-    // When page load
+    // Load import template
+    body.on( 'click', '.fame-list-templates .tpl-item', function( e ){
+        e.preventDefault();
+        var id = $( this ).attr( 'data-id' ) || '';
+        if ( id && typeof FAME_BUILDER.defined_templates[ id ] !== "undefined" ) {
+            remove_modal();
+            var data = JSON.parse( FAME_BUILDER.defined_templates[ id ].data );
 
+            $.each( data, function( index, row ){
+                var r = add_row_object( row );
+                $( '.fame-builder-area', body ).append( r );
+            } );
+
+            update_data();
+
+        }
+    } );
+
+
+    // When page load
     // check content
     body.on( 'fame_editor_changed', function(){
         var post_content = $( '#content' ).val();
@@ -1129,7 +1155,6 @@ jQuery( document ).ready( function ( $ ) {
             $( '.block-col-inner', c ).html(  new_item_object( item_data ) );
         }
     } );
-
     body.trigger( 'fame_editor_changed' );
 
     var data = $( '.fame_builder_content', body ).val();

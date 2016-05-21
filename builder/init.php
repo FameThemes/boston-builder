@@ -245,6 +245,33 @@ class Fame_Builder
         return $config;
     }
 
+    function get_defined_templates(  $post_not_in = array() ){
+        $templates = array();
+        $args = array(
+            'meta_key'     => Fame_Builder::$content_key,
+            'meta_value'   => 'builder',
+            'meta_compare' => 'LIKE',
+            'post_type'   => 'any',
+            'post_status' =>  array( 'publish', 'future' ),
+            'post__not_in' => $post_not_in
+        );
+        $query = new WP_Query( $args );
+        $posts = $query->get_posts();
+        foreach ( $posts as $k =>  $p ) {
+            $builder_content = self::get_builder_content( $p->ID );
+            if ( ! empty( $builder_content ) ) {
+                $templates[ $p->ID ] = array(
+                    'title' =>  $p->post_title,
+                    'data' => json_encode( $builder_content ),
+                    'id' => $p->ID
+                );
+            }
+
+        }
+
+        return apply_filters( 'fame_builder_get_defined_templates', $templates );
+    }
+
     function builder_interface( $post )
     {
         if ( ! self::is_active_builder() ) {
@@ -271,6 +298,8 @@ class Fame_Builder
             'items' => $this->get_items_config(),
             'open_setting_when_new' => true,
             'hide_switcher_if_template' => true,
+            'defined_templates' => $this->get_defined_templates( array( $post->ID ) ),
+            'nonce' => wp_create_nonce( 'fame_builder' ),
             'builder_templates' => array( // list files using page builder
                 "template-builder.php",
                 "tpl-builder.php",

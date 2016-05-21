@@ -9,7 +9,7 @@
             <div class="fame-builder-btn new-row" title="Add Rơ">
                 <?php _e( 'New row', 'textdomain' ); ?>
             </div>
-            <div class="fame-builder-btn" title="<?php esc_attr( 'Templates', 'textdomain' ) ?>">
+            <div class="fame-builder-btn fame-import-btn" title="<?php esc_attr( 'Import', 'textdomain' ) ?>">
                 <span class="dashicons dashicons-admin-page"></span>
             </div>
         </div>
@@ -126,6 +126,36 @@
                             <?php
                         }
                         ?>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+
+<script type="text/html" id="fame-builder-templates-tpl">
+
+    <div class="fame-modal fame-page-templates fame-no-footer">
+        <div class="fame-modal-inner">
+            <div class="fame-modal-header"><span class="modal-heading"><?php esc_html_e( 'Import', 'textdomain' ); ?></span> <div class="fame-modal-remove"></div></div>
+            <div class="fame-modal-body">
+                <div class="fame-modal-body-inner">
+                    <p class="description"><?php _e( 'Select a template to import', 'textdomain' ); ?></p>
+                    <div class="fame-list-templates">
+                        <#
+                        _.each( data, function( item, id ){
+
+                            #>
+                            <div class="tpl-item" data-id="{{ item.id }}">
+                                <div class="tpl-item-id">{{ item.id }}</div>
+                                <div class="tpl-item-name">{{ item.title }}</div>
+                                <div class="tpl-item-add"></div>
+                            </div>
+                        <#
+                        });
+                        #>
                     </div>
 
                 </div>
