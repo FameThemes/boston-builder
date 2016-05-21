@@ -134,7 +134,7 @@ class Fame_Builder
             'title' => esc_html__('Image', 'texdomain'),
             'icon'  => 'dashicons dashicons-format-image',
             'preview' => '
-                  
+                        <# if ( data.image ) { #>
                         <div class="fame-media-preview <# if ( data.image.url ) { #> has-preview <# } #>"
                         <# if ( data.image.type == \'\'  && data.image.url ) { #>
                             style="background-image: url(\'{{ data.image.url }}\');"
@@ -146,7 +146,8 @@ class Fame_Builder
                                     '.esc_html__( 'Your browser does not support HTML5 video.', 'textdomain' ).'
                                 </video>
                             <# } #>
-                        </div>',
+                        </div>
+                        <# } #>',
             'fields' => array(
                 array(
                     'id' => 'image',
@@ -160,7 +161,7 @@ class Fame_Builder
         $items['gallery'] = array(
             'id' => 'gallery',
             'title' => esc_html__('Gallery', 'texdomain'),
-            'icon'  => '',
+            'icon'  => 'dashicons dashicons-images-alt',
             'preview' => '',
             'fields' => array(
                 array(
@@ -172,23 +173,7 @@ class Fame_Builder
                 )
             )
         );
-
-
-        $items['tabs'] = array(
-            'id' => 'tabs',
-            'title' => esc_html__('Tabs', 'texdomain'),
-            'icon'  => '',
-            'preview' => '',
-            'fields' => array(
-                array(
-                    'id' => 'text',
-                    'type' => 'textarea',
-                    'title' => esc_html__('text', 'texdomain'),
-                    'desc' => __('Desc Here', 'texdomain'),
-                    'default' => __('Default value', 'texdomain'),
-                )
-            )
-        );
+        
 
         // Ensure item is unique
         $new_array = array();

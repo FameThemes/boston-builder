@@ -9,12 +9,7 @@
             <div class="fame-builder-btn new-row" title="Add Rơ">
                 <?php _e( 'New row', 'textdomain' ); ?>
             </div>
-            <?php /*
-            <div class="fame-builder-btn new-item" title="Add item">
-                <span class="dashicons dashicons-plus"></span>
-            </div>
-            */ ?>
-            <div class="fame-builder-btn" title="Templates">
+            <div class="fame-builder-btn" title="<?php esc_attr( 'Templates', 'textdomain' ) ?>">
                 <span class="dashicons dashicons-admin-page"></span>
             </div>
         </div>
