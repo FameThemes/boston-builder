@@ -116,6 +116,7 @@ class Fame_Builder
         $items['text'] = array(
             'id' => 'text',
             'title' => esc_html__('Text', 'texdomain'),
+            'desc' => esc_html__('Text blog', 'texdomain'),
             'icon'  => 'dashicons dashicons-editor-alignleft',
             'preview' => ' {{{ data.text }}}',
             'fields' => array(
@@ -132,6 +133,7 @@ class Fame_Builder
         $items['image'] = array(
             'id' => 'image',
             'title' => esc_html__('Image', 'texdomain'),
+            'desc' => esc_html__('Inser a image', 'texdomain'),
             'icon'  => 'dashicons dashicons-format-image',
             'preview' => '
                 <# if ( data.image ) { #>
@@ -158,13 +160,25 @@ class Fame_Builder
         $items['gallery'] = array(
             'id' => 'gallery',
             'title' => esc_html__('Gallery', 'texdomain'),
+            'desc' => esc_html__('Insert images', 'texdomain'),
             'icon'  => 'dashicons dashicons-images-alt',
-            'preview' => '',
+            'preview' => '
+                <# if ( data.gallery ) { #>
+                 <div class="fame-gallery" data-columns="{{ data.gallery.config.columns }}">
+                    <# _.each( data.gallery.items, function( item ) { 
+                        #>
+                        <div class="gallery-item">
+                            <img src="{{ item.thumb }}" alt=""/>
+                        </div>
+                        <#
+                    } );  #>
+                 </div>
+                <# } #>',
             'fields' => array(
                 array(
-                    'id' => 'text',
-                    'type' => 'textarea',
-                    'title' => esc_html__('text', 'texdomain'),
+                    'id' => 'gallery',
+                    'type' => 'gallery',
+                    'title' => esc_html__('Gallery', 'texdomain'),
                     'desc' => __('Desc Here', 'texdomain'),
                     'default' => __('Default value', 'texdomain'),
                 )
@@ -178,6 +192,7 @@ class Fame_Builder
             $item = wp_parse_args( $item, array(
                 'id' => '',
                 'title' => '',
+                'desc' => '',
                 'icon' => '',
                 'icon_type' => '', // can be url or icon
                 'preview' => '',
@@ -288,6 +303,7 @@ class Fame_Builder
         wp_enqueue_media();
 
         wp_enqueue_script( 'fame-editor', FAME_BUILDER_URL.'admin/assets/js/editor.js', array( 'jquery' ), false, true );
+        wp_enqueue_script( 'fame-builder-items', FAME_BUILDER_URL.'admin/assets/js/builder-items.js', array( 'jquery' ), false, true );
         wp_enqueue_script( 'fame-builder', FAME_BUILDER_URL.'admin/assets/js/builder.js', array( 'jquery' ), false, true );
         wp_localize_script( 'fame-builder', 'FAME_BUILDER', array(
             'default_row_col' => 1, // 50%

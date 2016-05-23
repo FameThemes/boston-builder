@@ -43,7 +43,7 @@
 
 <script type="text/html" id="fame-builder-col-tpl">
     <?php // $col_config = Fame_Builder::get_col_config(); ?>
-    <div class="fame-block-col">
+    <div class="fame-block-col fame-col">
         <div class="fame-col-toolbar fame-toolbar">
             <div class="fame-col-l fame-arrow-left"></div>
             <div class="fame-col-r fame-arrow-right"></div>
@@ -121,6 +121,7 @@
                                         <?php } ?>
                                     </div>
                                     <div class="fame-add-name"><?php echo esc_html( $item['title'] ); ?></div>
+                                    <div class="fame-add-desc"><?php echo esc_html( $item['desc'] ); ?></div>
                                 </div>
                             </div>
                             <?php
@@ -212,6 +213,41 @@
                         <input name="{{ item.id }}[type]" class="fame-attachment-type" type="hidden">
                     </div>
                 <#
+                    break;
+                case 'gallery':
+
+                    var v;
+                    try {
+                        if( typeof item.value !== "string" ) {
+                            v = JSON.stringify( item.value );
+                        } else {
+                            v = item.value;
+                        }
+                    } catch ( e  ) {
+
+                    }
+
+                    #>
+                <label>
+                    <span>{{ item.title }}</span>
+                    <div class="fame-item-gallery">
+                        <div
+                            <# if ( item.value && item.value.items.length ) { #> data-columns="{{ item.value.config.columns }}" <# } #>
+                             class="fame-gallery fame-gallery-preview <# if ( item.value && item.value.items.length ) { #> has-preview <# } #>">
+
+                            <# if ( item.value && item.value.items.length ) {
+                                _.each( item.value.items, function( img ) {
+                                    #>
+                                        <div class="gallery-item"><img src="{{ img.thumb }}" alt=""/></div>
+                                    <#
+                                } );
+                            } #>
+
+                        </div>
+                        <input name="{{ item.id }}" class="fame-gallery-val" value="{{ v }}" type="hidden">
+                    </div>
+                </label>
+                    <#
                     break;
                     case 'checkbox':  #>
                     <label>

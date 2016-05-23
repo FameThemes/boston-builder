@@ -199,10 +199,32 @@ jQuery( document ).ready( function ( $ ) {
         fame_new_item_modal,
         fame_defined_templates,
         builder_area = $( '.fame-builder-area' );
+    
+    function getItemControl( item ) {
+        var item_id = '';
+        if ( typeof item === 'string' ) {
+            item_id  = item;
+        } else {
+            item_id = item['id'];
+        }
+        if ( typeof fame_builder_controls[ item_id ] !== "undefined" ) {
+            return fame_builder_controls[ item_id ];
+        }
+        return false;
+    }
+
+    function itemControlMethod( item, method ){
+        var c = getItemControl( item );
+        if( c ) {
+            if ( typeof c[ method ] === "function" ) {
+                return c[ method ];
+            }
+        }
+        return false;
+    }
 
     // Fixed toolbar
-
-    function set_toolbar(){
+    function setToolbar(){
         var toolbar = $( '.fame-builder-toolbar', body );
         if ( ! toolbar.parent().hasClass( 'fame-builder-toolbar-wrap' ) ) {
             toolbar.wrap( '<div class="fame-builder-toolbar-wrap"></div>' );
@@ -239,7 +261,7 @@ jQuery( document ).ready( function ( $ ) {
             //toolbar.css( { top: t, left: l, position: 'fixed' });
         } );
     }
-    set_toolbar();
+    setToolbar();
 
     // Builder switching
     function switch_content_editor( editor_type ){
@@ -497,7 +519,9 @@ jQuery( document ).ready( function ( $ ) {
 
     fame_editing_media = false;
 
-    // Wp upload single
+    /**
+     * Single medial handle
+     */
     var frame = wp.media({
         title: wp.media.view.l10n.addMedia,
         multiple: false,
@@ -556,7 +580,125 @@ jQuery( document ).ready( function ( $ ) {
         $( '.fame-attachment-url', p ).val( '' );
         $( '.fame-attachment-type', p ).val( '' );
     } );
-    
+
+
+    /**
+     * Gallery handle
+     */
+    body.on( 'click', '.fame-item-gallery', function( e ){
+        e.preventDefault();
+        // http://shibashake.com/wordpress-theme/how-to-add-the-wordpress-3-5-media-manager-interface-part-2
+        var editing_gallery =  $( this );
+
+        var get_selection = function(){
+
+            var value = $( '.fame-gallery-val', editing_gallery ).val();
+            try {
+                value = JSON.parse( value );
+            } catch ( e ){
+                value =  false;
+            }
+
+            if ( ! value || !value.shortcode ) {
+                return;
+            }
+
+            var shortcode = wp.shortcode.next( 'gallery', value.shortcode ),
+                defaultPostId = wp.media.gallery.defaults.id,
+                attachments, selection;
+
+            // Bail if we didn't match the shortcode or all of the content.
+            if ( ! shortcode )
+                return false;
+
+            // Ignore the rest of the match object.
+            shortcode = shortcode.shortcode;
+
+            if ( _.isUndefined( shortcode.get('id') ) && ! _.isUndefined( defaultPostId ) )
+                shortcode.set( 'id', defaultPostId );
+
+            attachments = wp.media.gallery.attachments( shortcode );
+            selection = new wp.media.model.Selection( attachments.models, {
+                props:    attachments.props.toJSON(),
+                multiple: true
+            });
+
+            selection.gallery = attachments.gallery;
+
+            // Fetch the query's attachments, and then break ties from the
+            // query to allow for sorting.
+            selection.more().done( function() {
+                // Break ties with the query.
+                selection.props.set({ query: false });
+                selection.unmirror();
+                selection.props.unset('orderby');
+            });
+
+            return selection;
+        };
+
+        var selection = get_selection();
+        var state = 'gallery-library';
+        if ( state ) {
+            state= 'gallery-edit';
+        }
+
+        var gallery = wp.media({
+            id:         'fame-builder-gallery-frame',
+            frame:      'post',
+            state:      state,
+            title:      wp.media.view.l10n.editGalleryTitle,
+            editing:    true,
+            multiple:   true,
+            selection:  selection
+        });
+
+
+        gallery.on( 'update', function( selection ){
+            var  _g = wp.media.gallery;
+            var shortcode = _g.shortcode( selection );
+            var items = selection.toJSON();
+            var preview = '';
+            items.forEach( function ( item , index ){
+               // console.log( item );
+                var img_url;
+                if( typeof ( item.sizes.thumbnail ) !== 'undefined' ){
+                    img_url = item.sizes.thumbnail.url;
+                }else{
+                    img_url = item.url;
+                }
+                items[ index ] = {
+                    id:  item.id,
+                    thumb: img_url
+                };
+
+                preview += '<div><img src="'+img_url+'" alt=""/></div>';
+
+            } );
+            var data = {
+                shortcode: shortcode.string(),
+                config: shortcode.attrs.named || {},
+                items: items,
+            };
+
+            $( '.fame-gallery-val', editing_gallery ).val( JSON.stringify( data ) );
+
+            $( '.fame-gallery-preview', editing_gallery ).html( preview );
+
+            if ( preview !== '' ) {
+                $( '.fame-gallery-preview', editing_gallery ).addClass( 'has-preview' ).attr( '' );
+            } else {
+                $( '.fame-gallery-preview', editing_gallery ).removeClass( 'has-preview' );
+            }
+
+
+
+        } );
+
+
+        gallery.open();
+
+    } );
 
 
 
@@ -570,15 +712,23 @@ jQuery( document ).ready( function ( $ ) {
      * EN Input fields -----------------------------------------------
      */
 
-    function set_modal_size( modal ){
-        var set_pos = function(){
+    function set_modal_size( modal, width, height ){
+        var set_pos = function( ){
             var w = $( window ).width();
             var h = $( window ).height();
-            var cl = $( '#wpcontent' ).offset().left;
-            var mw = 600;
-            var mh = 600;
+            // var cl = $( '#wpcontent' ).offset().left;
+            var mw = width;
+            var mh = height;
+            if ( typeof mw === "undefined" || ! mw ) {
+                mw = 800;
+            }
+
+            if ( typeof mh === "undefined" || ! mh ) {
+                mh = 600;
+            }
+
             if (  mw > w ) {
-                mw = w;
+                mw = w - 20;
             }
             if (  mh > h - 100 ) {
                 mh = h - 100;
@@ -588,9 +738,9 @@ jQuery( document ).ready( function ( $ ) {
             modal.css( { left: ml , width: mw,  height: mh, top: mt } );
         };
 
-        set_pos();
+        set_pos( );
         $( window ).resize( function(){
-            set_pos();
+            set_pos(  );
         } );
 
     }
@@ -678,13 +828,57 @@ jQuery( document ).ready( function ( $ ) {
         open_modal( data, setup_fields_data( data.fields, fame_editing_item.prop( 'builder_data' ) ) );
     } );
 
-    // Modal Row/Column/Item save
+
+    /**
+     *  // Some key must convert to object
+     * @param data
+     * @param fields
+     */
+    function maybe_to_object( data, fields ){
+        if ( $.isEmptyObject( fields ) ) {
+            return data;
+        }
+
+        $.each( fields, function ( key, field ) {
+
+            if ( typeof data[ field.id ] !== "undefined" &&  field.type == 'gallery'  ) {
+                try {
+                    data[ field.id ] = JSON.parse( data[ field.id ] );
+                } catch ( e ) {
+                    data[ field.id ] = {};
+                }
+            }
+        } );
+
+        return data;
+    }
+
+    // Modal Save Row/Column/Item save
     body.on( 'click', '.fame-builder-save', function ( e ){
         e.preventDefault();
         var old_data =  fame_editing_item.prop( 'builder_data' );
         var new_data = $( 'form.fame-modal-body-inner', body ).serializeObject();
+        new_data = $.extend( {}, old_data, new_data );
+        var config;
 
-        new_data = $.extend( {}, old_data , new_data );
+        switch ( new_data._builder_type ) {
+            case 'row':
+                new_data = maybe_to_object( new_data, FAME_BUILDER.row.fields );
+                break;
+            case 'column':
+                new_data = maybe_to_object( new_data, FAME_BUILDER.col.fields );
+                break;
+            case 'item':
+                config = get_item_by_id( new_data._builder_id );
+                new_data =  maybe_to_object( new_data, config.fields );
+                var _filter_update = itemControlMethod( new_data, 'update' );
+                if ( _filter_update ) {
+                    new_data = _filter_update( new_data, config, fame_editing_item );
+                }
+                break;
+        }
+
+        console.log( new_data );
         fame_editing_item.prop( 'builder_data', new_data );
 
         remove_modal();
@@ -693,19 +887,101 @@ jQuery( document ).ready( function ( $ ) {
         body.trigger( 'builder_data_setting_update', [ fame_editing_item, new_data ] );
     } );
 
+    // Event handle when data change
+    body.on( 'builder_data_setting_update', function( e, item, data ) {
+        data = $.extend( {}, {
+            id: '',
+            _builder_type: '',
+            _builder_id:   '',
+        }, data );
+
+        switch ( data._builder_type ) {
+            case 'row': // when row settings changed
+                if ( typeof data.columns !== "undefined" ) {
+                    var n = string_to_number( data.columns );
+                    var bd = $( '.fame-block-body', item );
+                    var nc = $( '.fame-block-col', bd ).length;
+                    var c =  Math.round( FAME_BUILDER.max_columns / n );
+                    bd.attr( 'data-columns', n );
+                    // Update column class
+                    $( '.fame-block-col', bd ).attr( 'data-col', c );
+                    $( '.fame-block-col', bd ).each( function(){
+                        var data = $( this ).prop( 'builder_data' );
+                        data._builder_col = c;
+                        $( this ).prop( 'builder_data', data );
+                    } );
+
+                    var i ;
+                    if ( n > nc ) { // add new column
+                        for ( i = 0; i < n - nc; i ++ ) {
+                            var tpl_c = new_column_object( { _builder_col: c, } );
+                            bd.append( tpl_c );
+                        }
+                    } else  if ( nc > n ) { // remove columns
+                        // before remove columns
+                        // Move existing items columns that remove
+                        var j = nc - 2;
+                        var backup_items = [];
+                        if (  j < 0 ) {
+                            j = 0;
+                        }
+                        // copy items form removing columns
+                        for ( i = nc - 1; i > n - 1; i -- ) {
+                            $( '.fame-block-col', bd ).eq( i ).find( '.fame-block-item' ).each( function(){
+                                var item = $( this ).clone();
+                                item.prop( 'builder_data', $( this ).prop( 'builder_data' ) );
+                                backup_items.push( item );
+                            } );
+                        }
+                        $.each( backup_items, function( index, child ) {
+                            $( '.fame-block-col .block-col-inner', bd ).eq( j ).append( child );
+                        } );
+
+                        // Remove column
+                        for ( i = nc - 1; i > n - 1; i -- ) {
+                            $( '.fame-block-col', bd ).eq( i ).remove();
+                        }
+
+                        update_data();
+                    }
+                }
+                break;
+            case 'item':
+                // Update preview
+                var config = get_item_by_id( data._builder_id );
+                if ( typeof config.preview !== "undefined" ){
+                    var preview = '';
+
+                    var _filter_preview = itemControlMethod( data, 'preview' );
+                    if ( _filter_preview ) {
+                        data = _filter_preview( data, config, item );
+                    }
+
+                    preview = render_template_by_html( config.preview, data );
+                    $( '.fame-item-preview', item ).html( preview );
+
+                    var content = $( '.fame-item-preview', item ).html();
+                    if ( content && content.trim() !== '' ) {
+                        item.addClass( 'has-preview' );
+                    } else {
+                        item.removeClass( 'has-preview' );
+                    }
+                }
+                break;
+
+        } // end switch
+
+    } );
+
+
+
+
     // Open modal add new item
     fame_new_item_modal = get_template( 'fame-builder-add-items-tpl', {} );
     fame_new_item_modal = $( fame_new_item_modal );
     fame_new_item_modal.hide();
     body.append( fame_new_item_modal );
     set_modal_size( fame_new_item_modal );
-    /*
-    body.on( 'click', '.new-item', function( e ){
-        e.preventDefault();
-        body.append( '<div class="fame-modal-drop"></div>' );
-        fame_new_item_modal.show();
-    } );
-    */
 
     // Defined templates
     fame_defined_templates = get_template( 'fame-builder-templates-tpl', FAME_BUILDER.defined_templates );
@@ -717,6 +993,7 @@ jQuery( document ).ready( function ( $ ) {
         e.preventDefault();
         body.append( '<div class="fame-modal-drop"></div>' );
         fame_defined_templates.show();
+        set_modal_size( fame_defined_templates, 900, 550 );
     } );
 
     // End modal
@@ -954,7 +1231,7 @@ jQuery( document ).ready( function ( $ ) {
 
                 col.prop('builder_data', col_data).attr('data-col', col_data._builder_col);
                 col.next().prop('builder_data', next_col_data).attr('data-col', next_col_data._builder_col);
-                console.log('run: ' + col_data._builder_col + '|' + next_col_data._builder_col);
+
             }
         }
 
@@ -1011,89 +1288,6 @@ jQuery( document ).ready( function ( $ ) {
     } );
 
 
-
-    // Event handle when data change
-    body.on( 'builder_data_setting_update', function( e, item, data ) {
-        data = $.extend( {}, {
-            id: '',
-            _builder_type: '',
-            _builder_id:   '',
-        }, data );
-
-        switch ( data._builder_type ) {
-            case 'row': // when row settings changed
-                if ( typeof data.columns !== "undefined" ) {
-                    var n = string_to_number( data.columns );
-                    var bd = $( '.fame-block-body', item );
-                    var nc = $( '.fame-block-col', bd ).length;
-                    var c =  Math.round( FAME_BUILDER.max_columns / n );
-                    bd.attr( 'data-columns', n );
-                    // Update column class
-                    $( '.fame-block-col', bd ).attr( 'data-col', c );
-                    $( '.fame-block-col', bd ).each( function(){
-                        var data = $( this ).prop( 'builder_data' );
-                        data._builder_col = c;
-                        $( this ).prop( 'builder_data', data );
-                    } );
-
-                    console.log( typeof  data.columns );
-                    console.log(  n + '---' + nc );
-
-                    var i ;
-                    if ( n > nc ) { // add new column
-                        for ( i = 0; i < n - nc; i ++ ) {
-                            var tpl_c = new_column_object( { _builder_col: c, } );
-                            bd.append( tpl_c );
-                        }
-                    } else  if ( nc > n ) { // remove columns
-                        // before remove columns
-                        // Move existing items columns that remove
-                        var j = nc - 2;
-                        var backup_items = [];
-                        if (  j < 0 ) {
-                            j = 0;
-                        }
-                        // copy items form removing columns
-                        for ( i = nc - 1; i > n - 1; i -- ) {
-                            $( '.fame-block-col', bd ).eq( i ).find( '.fame-block-item' ).each( function(){
-                                var item = $( this ).clone();
-                                item.prop( 'builder_data', $( this ).prop( 'builder_data' ) );
-                                backup_items.push( item );
-                            } );
-                        }
-                        $.each( backup_items, function( index, child ) {
-                            $( '.fame-block-col .block-col-inner', bd ).eq( j ).append( child );
-                        } );
-
-                        // Remove column
-                        for ( i = nc - 1; i > n - 1; i -- ) {
-                            $( '.fame-block-col', bd ).eq( i ).remove();
-                        }
-
-                        update_data();
-                    }
-                }
-                break;
-            case 'item':
-                // Update preview
-                var config = get_item_by_id( data._builder_id );
-                if ( typeof config.preview !== "undefined" ){
-                    var preview = '';
-                    preview = render_template_by_html( config.preview, data );
-                    $( '.fame-item-preview', item ).html( preview );
-
-                    var content = $( '.fame-item-preview', item ).html();
-                    if ( content && content.trim() !== '' ) {
-                        item.addClass( 'has-preview' );
-                    } else {
-                        item.removeClass( 'has-preview' );
-                    }
-                }
-                break;
-
-        } // end switch
-
-    } );
 
     // Load import template
     body.on( 'click', '.fame-list-templates .tpl-item', function( e ){
@@ -1168,6 +1362,10 @@ jQuery( document ).ready( function ( $ ) {
         var r = add_row_object( row );
         $( '.fame-builder-area', body ).append( r );
     } );
+
+
+
+   // $( '.fame-add' ).eq( 0 ).trigger( 'click' );
 
 
 } );
