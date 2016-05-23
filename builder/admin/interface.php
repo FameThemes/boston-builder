@@ -1,24 +1,46 @@
 
 <div class="fame-builder-switch">
-    <button class="fame-builder-switch-btn button button-secondary">Switch to builder</button>
+    <div class="fame-builder-switch-btn button button-secondary"></div>
 </div>
+
 
 <div class="fame-builder-wrap">
-    <div class="fame-builder hide" style="display: none">
-        <div class="fame-builder-toolbar">
-            <div class="fame-builder-btn new-row" title="Add Rơ">
-                <?php _e( 'New row', 'textdomain' ); ?>
-            </div>
-            <div class="fame-builder-btn fame-import-btn" title="<?php esc_attr( 'Import', 'textdomain' ) ?>">
-                <span class="dashicons dashicons-admin-page"></span>
+
+
+        <div class="postbox " >
+            <button aria-expanded="true" class="handlediv button-link" type="button">
+                <span aria-hidden="true" class="toggle-indicator"></span>
+            </button>
+            <h2 class="hndle ui-sortable-handle">
+                <span><?php _e( 'Page builder', 'textdomain' ); ?></span>
+            </h2>
+            <div class="inside">
+
+
+                <div class="fame-builder hide" style="display: none">
+                    <div class="fame-builder-toolbar">
+                        <div class="fame-builder-btn new-row" title="Add Rơ">
+                            <?php _e( 'New row', 'textdomain' ); ?>
+                        </div>
+                        <div class="fame-builder-btn fame-import-btn" title="<?php esc_attr( 'Import', 'textdomain' ) ?>">
+                            <span class="dashicons dashicons-admin-page"></span>
+                        </div>
+                    </div>
+                    <div class="fame-builder-area">
+
+                    </div><!-- fame-builder-area -->
+                    <input type="hidden" autocomplete="off" class="fame_builder_content" name="fame_builder_content" value="<?php echo esc_attr( json_encode( Fame_Builder::get_builder_content() ) ); ?>">
+                </div>
+
+
+
             </div>
         </div>
-        <div class="fame-builder-area">
 
-        </div><!-- fame-builder-area -->
-        <input type="hidden" autocomplete="off" class="fame_builder_content" name="fame_builder_content" value="<?php echo esc_attr( json_encode( Fame_Builder::get_builder_content() ) ); ?>">
-    </div>
 </div>
+
+
+
 
 <input type="hidden" autocomplete="off" id="fame_post_content_type" name="fame_post_content_type" value="<?php echo esc_attr( Fame_Builder::get_content_type() ); ?>">
 

@@ -1,3 +1,30 @@
+.fame-builder-wrap * {
+  box-sizing: border-box;
+}
+.fame-builder-wrap .postbox .handlediv .toggle-indicator::before {
+  border-radius: 50%;
+  margin-top: 4px;
+  text-indent: -1px;
+  width: 20px;
+}
+.fame-builder-wrap .postbox .toggle-indicator::before {
+  -moz-osx-font-smoothing: grayscale;
+  content: "\f142";
+  display: inline-block;
+  font: 400 20px/1 dashicons;
+  text-decoration: none !important;
+}
+.fame-builder-wrap .postbox.closed .toggle-indicator::before {
+  content: "\f140";
+}
+.fame-builder-wrap .postbox {
+  margin-bottom: 0px;
+}
+.fame-builder-wrap .postbox .inside {
+  margin: 0px !important;
+  padding: 0px;
+}
+
 .fame-builder-hide {
   display: block;
   height: 0px;
@@ -14,25 +41,28 @@
 .fame-builder-switch {
   padding-top: 20px;
   padding-bottom: 15px;
+  display: none;
+}
+
+.fame-has-switcher .fame-builder-switch {
+  display: inline-block;
 }
 
 .hide_switcher_if_template .fame-builder-switch {
   display: none;
 }
-.hide_switcher_if_template .fame-builder {
+.hide_switcher_if_template .fame-builder-wrap {
   margin-top: 20px;
+}
+.hide_switcher_if_template .fame-builder-wrap.fame-builder-hide {
+  margin-top: 0px;
 }
 
 .fame-has-switcher #wp-content-editor-tools {
   padding-top: 0px;
 }
 
-.fame-builder * {
-  box-sizing: border-box;
-}
-
 .fame-builder {
-  border: 1px solid #dddddd;
   width: 100%;
 }
 
