@@ -4,12 +4,7 @@
 var fame_builder_controls, fame_builder_control;
 
 
-
-
-
-(function( $ ) {
-
-
+( function( $ ) {
 
     fame_builder_controls = fame_builder_controls || {};
     fame_builder_controls[ 'gallery' ] = {
@@ -24,7 +19,9 @@ var fame_builder_controls, fame_builder_control;
 
         },
 
+        render: function( data, config, editing_item  ){
 
+        },
 
     };
 

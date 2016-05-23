@@ -161,7 +161,7 @@ class Fame_Builder
             'id' => 'gallery',
             'title' => esc_html__('Gallery', 'texdomain'),
             'desc' => esc_html__('Insert images', 'texdomain'),
-            'icon'  => 'dashicons dashicons-images-alt',
+            'icon'  => 'dashicons dashicons-format-gallery',
             'preview' => '
                 <# if ( data.gallery ) { #>
                  <div class="fame-gallery" data-columns="{{ data.gallery.config.columns }}">

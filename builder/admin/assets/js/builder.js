@@ -585,25 +585,25 @@ jQuery( document ).ready( function ( $ ) {
     /**
      * Gallery handle
      */
-    body.on( 'click', '.fame-item-gallery', function( e ){
-        e.preventDefault();
-        // http://shibashake.com/wordpress-theme/how-to-add-the-wordpress-3-5-media-manager-interface-part-2
-        var editing_gallery =  $( this );
+    function fame_gallery( options ){
 
+        var settings = $.extend( {}, {
+            shortcode: '',
+            open_callback: function(){
+
+            },
+            update_callback: function(){
+
+            },
+            close_callback: function(){
+
+            }
+        }, options );
+
+        // http://shibashake.com/wordpress-theme/how-to-add-the-wordpress-3-5-media-manager-interface-part-2
         var get_selection = function(){
 
-            var value = $( '.fame-gallery-val', editing_gallery ).val();
-            try {
-                value = JSON.parse( value );
-            } catch ( e ){
-                value =  false;
-            }
-
-            if ( ! value || !value.shortcode ) {
-                return;
-            }
-
-            var shortcode = wp.shortcode.next( 'gallery', value.shortcode ),
+            var shortcode = wp.shortcode.next( 'gallery', settings.shortcode ),
                 defaultPostId = wp.media.gallery.defaults.id,
                 attachments, selection;
 
@@ -653,14 +653,22 @@ jQuery( document ).ready( function ( $ ) {
             selection:  selection
         });
 
+        gallery.on( 'open', function( selection ){
+            settings.open_callback( gallery, selection );
+        });
+
+        gallery.on( 'close', function( selection ){
+            settings.close_callback( gallery, selection );
+        });
 
         gallery.on( 'update', function( selection ){
             var  _g = wp.media.gallery;
             var shortcode = _g.shortcode( selection );
             var items = selection.toJSON();
             var preview = '';
+            var config = shortcode.attrs.named || {};
             items.forEach( function ( item , index ){
-               // console.log( item );
+                // console.log( item );
                 var img_url;
                 if( typeof ( item.sizes.thumbnail ) !== 'undefined' ){
                     img_url = item.sizes.thumbnail.url;
@@ -672,34 +680,62 @@ jQuery( document ).ready( function ( $ ) {
                     thumb: img_url
                 };
 
-                preview += '<div><img src="'+img_url+'" alt=""/></div>';
+                preview += '<div class="gallery-item"><img src="'+img_url+'" alt=""/></div>';
 
             } );
             var data = {
                 shortcode: shortcode.string(),
-                config: shortcode.attrs.named || {},
+                config: config,
                 items: items,
             };
-
-            $( '.fame-gallery-val', editing_gallery ).val( JSON.stringify( data ) );
-
-            $( '.fame-gallery-preview', editing_gallery ).html( preview );
-
-            if ( preview !== '' ) {
-                $( '.fame-gallery-preview', editing_gallery ).addClass( 'has-preview' ).attr( '' );
-            } else {
-                $( '.fame-gallery-preview', editing_gallery ).removeClass( 'has-preview' );
-            }
-
-
+            settings.update_callback( gallery, selection, data );
 
         } );
 
+        gallery.open();
+    }
+
+
+    body.on( 'click', '.fame-item-gallery', function( e ){
+        e.preventDefault();
+
+        var editing_gallery =  $( this );
+
+        var value = $( '.fame-gallery-val', editing_gallery ).val();
+        var shortcode = '';
+        try {
+            value = JSON.parse( value );
+        } catch ( e ){
+            value =  false;
+        }
+
+        if (  value && value.shortcode ) {
+            shortcode = value.shortcode;
+        }
+
+
+        fame_gallery( {
+            shortcode: value.shortcode,
+            update_callback: function(  gallery, selection, data ){
+                var preview = '';
+                _.each( data.items, function( item ) {
+                    preview += '<div><img src="'+item.thumb+'" alt=""/></div>';
+                } );
+
+                $( '.fame-gallery-val', editing_gallery ).val( JSON.stringify( data ) );
+                $( '.fame-gallery-preview', editing_gallery ).html( preview );
+                if ( preview !== '' ) {
+                    $( '.fame-gallery-preview', editing_gallery ).addClass( 'has-preview' ).attr( '' );
+                } else {
+                    $( '.fame-gallery-preview', editing_gallery ).removeClass( 'has-preview' );
+                }
+
+            }
+        } );
 
         gallery.open();
 
     } );
-
 
 
     function input_fields( $context ){
@@ -707,11 +743,9 @@ jQuery( document ).ready( function ( $ ) {
         $( '.editor', $context ).wp_js_editor();
     }
 
-
     /**
      * EN Input fields -----------------------------------------------
      */
-
     function set_modal_size( modal, width, height ){
         var set_pos = function( ){
             var w = $( window ).width();
@@ -801,15 +835,37 @@ jQuery( document ).ready( function ( $ ) {
         }
     } );
 
-    
     // Item settings modal
     body.on( 'click', '.fame-block-item .fame-item-settings', function( e){
         e.preventDefault();
         fame_editing_item = $( this ).closest( '.fame-block-item' );
         var save_value = fame_editing_item.prop( 'builder_data' );
-        var config = get_item_by_id( save_value._builder_id );
-        var d = setup_fields_data( config.fields, save_value );
-        open_modal( config, d );
+
+        if ( save_value._builder_id == 'gallery' ) {
+            if ( typeof save_value.gallery === "undefined" ) {
+                save_value.gallery = {};
+            }
+
+            if ( typeof save_value.gallery.shortcode === "undefined" ) {
+                save_value.gallery.shortcode = '';
+            }
+
+            fame_gallery( {
+                shortcode:  save_value.gallery.shortcode,
+                update_callback: function ( gallery, section, data ) {
+                    save_value.gallery = data;
+                    fame_editing_item.prop( 'builder_data', save_value );
+                    update_data();
+                    body.trigger( 'builder_data_setting_update', [ fame_editing_item, save_value ] );
+                }
+            } );
+
+        } else {
+            var config = get_item_by_id( save_value._builder_id );
+            var d = setup_fields_data( config.fields, save_value );
+            open_modal( config, d );
+        }
+
     } );
 
     // Column settings modal
@@ -878,7 +934,6 @@ jQuery( document ).ready( function ( $ ) {
                 break;
         }
 
-        console.log( new_data );
         fame_editing_item.prop( 'builder_data', new_data );
 
         remove_modal();
