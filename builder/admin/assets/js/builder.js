@@ -405,11 +405,15 @@ jQuery( document ).ready( function ( $ ) {
         return false;
     }
 
-
     function update_data(){
         var save_data = {};
+        var content = '';
         // loop rows
         $( '.fame-block-row', builder_area ).each( function( row_index ){
+
+            content += '<div class="builder-container container">';
+            content += '<div class="builder-row row">';
+
             var r =  $( this );
             save_data[ row_index ] = {
                 settings: {},
@@ -419,6 +423,7 @@ jQuery( document ).ready( function ( $ ) {
 
             // loop column
             $( '.fame-block-body .fame-block-col', r ).each( function( column_index ) {
+
                 var c =  $( this );
                 var column_data = {
                     settings: {},
@@ -426,18 +431,46 @@ jQuery( document ).ready( function ( $ ) {
                 };
                 column_data.settings = c.prop( 'builder_data' );
                 var items_data = [];
+                var item_html = '';
                 // loop item
 
                 $( '.block-col-inner .fame-block-item', c ).each( function( item_index ){
                     items_data[ item_index ] =  $( this ).prop( 'builder_data' );
+                    var item_content = $( this ).prop( 'builder_content' ) || '';
+                    if ( item_content ) {
+                        item_html += '<div class="builder-item">' + item_content + '</div>';
+                    }
                 } );
+
                 column_data.items = items_data;
                 save_data[ row_index ].columns[ column_index ] = column_data;
+
+
+                content += '<div class="builder-col col-md-'+column_data.settings._builder_col+' col-sm-12">';
+                content += item_html;
+                content += '</div>'; // end col
             });
+
+            content += '</div>'; // end row
+            content += '</div>'; // end container
 
         } );
 
         $( '.fame_builder_content', body ).val( JSON.stringify( save_data ) );
+
+
+        try {
+            var editor = window.tinymce.get( 'content');
+            if ( editor ) {
+                editor.setContent( content, {format : 'raw'});
+            } else {
+                $( '#content', body ).val( content );
+            }
+
+        } catch ( e ) {
+            $( '#content', body ).val( content );
+        }
+
 
     }
 
@@ -585,7 +618,7 @@ jQuery( document ).ready( function ( $ ) {
     /**
      * Gallery handle
      */
-    function fame_gallery( options ){
+    var fame_gallery = function( options ){
 
         var settings = $.extend( {}, {
             shortcode: '',
@@ -667,6 +700,9 @@ jQuery( document ).ready( function ( $ ) {
             var items = selection.toJSON();
             var preview = '';
             var config = shortcode.attrs.named || {};
+            if ( ! config.columns ) {
+                config.columns = 3;
+            }
             items.forEach( function ( item , index ){
                 // console.log( item );
                 var img_url;
@@ -688,12 +724,13 @@ jQuery( document ).ready( function ( $ ) {
                 config: config,
                 items: items,
             };
+            console.log( shortcode );
             settings.update_callback( gallery, selection, data );
 
         } );
 
         gallery.open();
-    }
+    };
 
 
     body.on( 'click', '.fame-item-gallery', function( e ){
@@ -854,9 +891,13 @@ jQuery( document ).ready( function ( $ ) {
                 shortcode:  save_value.gallery.shortcode,
                 update_callback: function ( gallery, section, data ) {
                     save_value.gallery = data;
+                    if ( ! data.shortcode ) {
+                        data.shortcode = '';
+                    }
                     fame_editing_item.prop( 'builder_data', save_value );
+                    fame_editing_item.prop( 'builder_content', data.shortcode );
                     update_data();
-                    body.trigger( 'builder_data_setting_update', [ fame_editing_item, save_value ] );
+                    body.trigger( 'builder_data_setting_update', [ fame_editing_item, save_value, true ] );
                 }
             } );
 
@@ -937,13 +978,11 @@ jQuery( document ).ready( function ( $ ) {
         fame_editing_item.prop( 'builder_data', new_data );
 
         remove_modal();
-        update_data();
-
         body.trigger( 'builder_data_setting_update', [ fame_editing_item, new_data ] );
     } );
 
     // Event handle when data change
-    body.on( 'builder_data_setting_update', function( e, item, data ) {
+    body.on( 'builder_data_setting_update', function( e, item, data, rendered_content ) {
         data = $.extend( {}, {
             id: '',
             _builder_type: '',
@@ -1004,7 +1043,7 @@ jQuery( document ).ready( function ( $ ) {
             case 'item':
                 // Update preview
                 var config = get_item_by_id( data._builder_id );
-                if ( typeof config.preview !== "undefined" ){
+                if ( typeof config.content_template !== "undefined" ){
                     var preview = '';
 
                     var _filter_preview = itemControlMethod( data, 'preview' );
@@ -1012,8 +1051,9 @@ jQuery( document ).ready( function ( $ ) {
                         data = _filter_preview( data, config, item );
                     }
 
-                    preview = render_template_by_html( config.preview, data );
+                    preview = render_template_by_html( config.content_template, data );
                     $( '.fame-item-preview', item ).html( preview );
+
 
                     var content = $( '.fame-item-preview', item ).html();
                     if ( content && content.trim() !== '' ) {
@@ -1021,14 +1061,30 @@ jQuery( document ).ready( function ( $ ) {
                     } else {
                         item.removeClass( 'has-preview' );
                     }
+
+
+                    if ( typeof rendered_content === "undefined" || ! rendered_content ) {
+                        if (data._builder_id === 'gallery') {
+                            try {
+                                item.prop('builder_content', data.gallery.shortcode );
+                            } catch (e) {
+                                item.prop('builder_content', '');
+                            }
+                        } else {
+                            item.prop('builder_content', preview);
+                        }
+                    }
+
+
                 }
                 break;
 
         } // end switch
 
+        // Update data
+        update_data();
+
     } );
-
-
 
 
     // Open modal add new item
@@ -1063,23 +1119,34 @@ jQuery( document ).ready( function ( $ ) {
         save_values._builder_type = 'item';
         var config = get_item_by_id( save_values._builder_id );
         config.fields = setup_fields_data( config.fields, save_values );
-        var o = get_template( 'fame-builder-item-tpl', config );
-        o = $( o );
-
+        var item = get_template( 'fame-builder-item-tpl', config );
+        item = $( item );
         // Update preview
-        if ( typeof config.preview !== "undefined" ){
-            var preview = render_template_by_html( config.preview, save_values );
-            $( '.fame-item-preview', o ).html( preview );
-            var content = $( '.fame-item-preview', o ).html();
+        if ( typeof config.content_template !== "undefined" ){
+            var preview = render_template_by_html( config.content_template, save_values );
+            $( '.fame-item-preview', item ).html( preview );
+
+            var content = $( '.fame-item-preview', item ).html();
             if ( content && content.trim() !== '' ) {
-                o.addClass( 'has-preview' );
+                item.addClass( 'has-preview' );
             } else {
-                o.removeClass( 'has-preview' );
+                item.removeClass( 'has-preview' );
             }
+
+            if ( save_values._builder_id === 'gallery' ) {
+                try {
+                    item.prop( 'builder_content',  save_values.gallery.shortcode );
+                } catch ( e ) {
+                    item.prop( 'builder_content',  '' );
+                }
+            } else {
+                item.prop( 'builder_content',  preview );
+            }
+
         }
 
-        o.prop( 'builder_data', save_values );
-        return o;
+        item.prop( 'builder_data', save_values );
+        return item;
     }
 
     // Add new column
@@ -1218,12 +1285,39 @@ jQuery( document ).ready( function ( $ ) {
                     };
                     var new_item = new_item_object( data );
                     $( '.block-col-inner', fame_selected_item ).append( new_item );
+                    fame_editing_item = new_item;
+                    var save_value = fame_editing_item.prop('builder_data');
 
                     if ( string_to_bool( FAME_BUILDER.open_setting_when_new ) ) {
-                        fame_editing_item = new_item;
-                        var save_value = fame_editing_item.prop('builder_data');
-                        var d = setup_fields_data(item_config.fields, save_value);
-                        open_modal(item_config, d);
+
+                        if ( save_value._builder_id === 'gallery'  ) {
+
+                            if ( typeof save_value.gallery === "undefined") {
+                                save_value.gallery = {};
+                            }
+
+                            if (typeof save_value.gallery.shortcode === "undefined") {
+                                save_value.gallery.shortcode = '';
+                            }
+
+                            fame_gallery({
+                                shortcode: save_value.gallery.shortcode,
+                                update_callback: function (gallery, section, data) {
+                                    save_value.gallery = data;
+                                    if (!data.shortcode) {
+                                        data.shortcode = '';
+                                    }
+                                    fame_editing_item.prop('builder_data', save_value);
+                                    fame_editing_item.prop('builder_content', data.shortcode );
+                                    update_data();
+                                    body.trigger('builder_data_setting_update', [fame_editing_item, save_value, true]);
+                                }
+                            });
+                        } else {
+                            var d = setup_fields_data(item_config.fields, save_value);
+                            open_modal(item_config, d);
+                        }
+
                     }
 
                 }

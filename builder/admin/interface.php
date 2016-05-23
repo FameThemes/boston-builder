@@ -74,17 +74,18 @@
     <div data-id="{{ data.id }}" class="fame-block-item">
         <div class="fame-item-toolbar fame-toolbar">
             <div class="fame-item-move fame-move"></div>
+            <# if ( data.is_settings ) { #>
             <div class="fame-item-settings fame-edit"></div>
+            <# } #>
             <div class="fame-item-remove fame-remove"></div>
         </div>
-
-        <div class="fame-item-settings fame-item-icon"  <# if ( data.icon_type == 'url' ) { #> style="background-image: url( '{{ data.icon }}' );" <# } #> >
+        <div class="<# if ( data.is_settings ) { #> fame-item-settings <# } #> fame-item-icon"  <# if ( data.icon_type == 'url' ) { #> style="background-image: url( '{{ data.icon }}' );" <# } #> >
             <# if ( data.icon_type != 'url' ) { #>
                 <span class="fame-add-icon {{ data.icon }}"></span>
             <# } #>
         </div>
 
-        <# if ( data.preview ) {  #>
+        <# if ( data.content_template ) {  #>
         <div class="fame-item-preview"></div>
         <# } #>
     </div>

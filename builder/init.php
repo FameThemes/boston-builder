@@ -12,11 +12,44 @@ class Fame_Builder
         add_action('admin_enqueue_scripts', array( $this, 'builder_css' ) );
         add_action('admin_footer', array( $this, 'wp_editor_tpl' ) );
 
+        add_editor_style( FAME_BUILDER_URL.'assets/css/editor.css' );
+
         add_action('save_post', array( $this, 'save_builder_data' ), 55, 3 );
         //do_action( 'save_post', $post_ID, $post, $update );
+
+        // wp_insert_post_data
+        // $data = apply_filters( 'wp_insert_post_data', $data, $postarr );
+
+    }
+
+    function render_content_fallback(){
+
     }
 
     function save_builder_data( $post_id , $post = null , $update = false ){
+
+
+        // Check if nonce is valid.
+       // if ( ! wp_verify_nonce( $nonce_name, $nonce_action ) ) {
+         //   return;
+        //}
+
+        // Check if user has permissions to save data.
+        if ( ! current_user_can( 'edit_post', $post_id ) ) {
+            return;
+        }
+
+        // Check if not an autosave.
+        if ( wp_is_post_autosave( $post_id ) ) {
+            return;
+        }
+
+        // Check if not a revision.
+        if ( wp_is_post_revision( $post_id ) ) {
+            return;
+        }
+
+
         $data =   isset( $_REQUEST['fame_builder_content'] ) ? $_REQUEST['fame_builder_content'] : '{}';
         if ( is_string( $data ) ) {
             $data = json_decode( stripslashes_deep( $data ) , true );
@@ -118,7 +151,7 @@ class Fame_Builder
             'title' => esc_html__('Text', 'texdomain'),
             'desc' => esc_html__('Text blog', 'texdomain'),
             'icon'  => 'dashicons dashicons-editor-alignleft',
-            'preview' => ' {{{ data.text }}}',
+            'content_template' => ' {{{ data.text }}}',
             'fields' => array(
                 array(
                     'id' => 'text',
@@ -135,7 +168,7 @@ class Fame_Builder
             'title' => esc_html__('Image', 'texdomain'),
             'desc' => esc_html__('Inser a image', 'texdomain'),
             'icon'  => 'dashicons dashicons-format-image',
-            'preview' => '
+            'content_template' => '
                 <# if ( data.image ) { #>
                     <# if ( data.image.type == \'\'  && data.image.url ) { #>
                         <img src="{{ data.image.url }}" alt="">
@@ -162,7 +195,7 @@ class Fame_Builder
             'title' => esc_html__('Gallery', 'texdomain'),
             'desc' => esc_html__('Insert images', 'texdomain'),
             'icon'  => 'dashicons dashicons-format-gallery',
-            'preview' => '
+            'content_template' => '
                 <# if ( data.gallery ) { #>
                  <div class="fame-gallery" data-columns="{{ data.gallery.config.columns }}">
                     <# _.each( data.gallery.items, function( item ) { 
@@ -195,11 +228,18 @@ class Fame_Builder
                 'desc' => '',
                 'icon' => '',
                 'icon_type' => '', // can be url or icon
-                'preview' => '',
+                'content_template' => '',
+                'is_settings' => false,
                 'fields' => array(),
             ) );
 
             $item['icon_type'] = ( filter_var( $item['icon'] , FILTER_VALIDATE_URL ) ) ? 'url' : 'icon' ;
+            if ( is_array( $item['fields'] ) && ! empty( $item['fields'] ) ) {
+                $item['is_settings'] = true;
+            } else {
+                $item['is_settings'] = false;
+            }
+
             $new_array[ $item['id'] ] = $item;
         }
 
