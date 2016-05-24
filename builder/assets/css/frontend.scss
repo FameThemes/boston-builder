@@ -1,0 +1,50 @@
+.row {
+  box-sizing: border-box;
+  * {
+    box-sizing: border-box;
+  }
+  margin-bottom: 35px;
+  &:after {
+    clear: both; content: " "; display: block;
+  }
+  margin-left: -15px;
+  margin-right: -15px;
+
+  [class^="col-"], .builder-col {
+    padding-left: 15px;
+    padding-right: 15px;
+    float: left;
+  }
+
+}
+@for $i from 1 through 12 {
+  .col-md-#{$i}{
+    width: percentage(  $i / 12 );
+  }
+}
+
+.builder-container {
+  .gallery {
+    margin-left: -15px;
+    margin-right: -15px;
+    margin-bottom: 0px;
+    .gallery-item {
+      margin: 0px;
+      padding: 15px;
+      a {
+        line-height: 1;
+      }
+      img {
+        width: 100%;
+        height: auto;
+        max-width: 100%;
+      }
+    }
+  }
+
+  @for $i from 1 through 12 {
+    .gallery-columns-#{$i} .gallery-item {
+      max-width: (100% / $i);
+    }
+  }
+}

@@ -33,8 +33,6 @@
 </div>
 
 
-
-
 <input type="hidden" autocomplete="off" id="fame_post_content_type" name="fame_post_content_type" value="<?php echo esc_attr( Fame_Builder::get_content_type() ); ?>">
 
 
@@ -225,9 +223,9 @@
                         </div>
 
                         <div class="fame-media-remove"></div>
-                        <input name="{{ item.id }}[id]" class="fame-attachment-id" type="hidden">
-                        <input name="{{ item.id }}[url]" class="fame-attachment-url" type="hidden">
-                        <input name="{{ item.id }}[type]" class="fame-attachment-type" type="hidden">
+                        <input name="{{ item.id }}[id]" value="{{ values.id }}" class="fame-attachment-id" type="hidden">
+                        <input name="{{ item.id }}[url]" value="{{ values.url }}" class="fame-attachment-url" type="hidden">
+                        <input name="{{ item.id }}[type]" value="{{ values.type }}" class="fame-attachment-type" type="hidden">
                     </div>
                 <#
                     break;

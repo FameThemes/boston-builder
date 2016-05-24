@@ -924,3 +924,10 @@ object {
 .gallery-caption {
 	display: block;
 }
+
+
+/* Test */
+.entry-content {
+	max-width: 980px;
+	margin: 0 auto;
+}

@@ -8,26 +8,26 @@ class Fame_Builder
     {
         define('FAME_BUILDER_URL', self::get_url(__FILE__));
         define('FAME_BUILDER_PATH', trailingslashit(dirname(__FILE__)));
-        add_action('edit_form_after_title', array( $this, 'builder_interface' ) );
-        add_action('admin_enqueue_scripts', array( $this, 'builder_css' ) );
-        add_action('admin_footer', array( $this, 'wp_editor_tpl' ) );
 
-        add_editor_style( FAME_BUILDER_URL.'assets/css/editor.css' );
 
-        add_action('save_post', array( $this, 'save_builder_data' ), 55, 3 );
-        //do_action( 'save_post', $post_ID, $post, $update );
-
-        // wp_insert_post_data
-        // $data = apply_filters( 'wp_insert_post_data', $data, $postarr );
-
-    }
-
-    function render_content_fallback(){
+        if ( is_admin() ) {
+            add_action('edit_form_after_title', array($this, 'builder_interface'));
+            add_action('admin_enqueue_scripts', array($this, 'builder_css'));
+            add_action('admin_footer', array($this, 'wp_editor_tpl'));
+            add_editor_style(FAME_BUILDER_URL . 'assets/css/editor.css');
+            add_action('save_post', array($this, 'save_builder_data'), 55, 3);
+        } else {
+            $this->frontend_includes();
+        }
 
     }
+
+    function frontend_includes(){
+        require_once FAME_BUILDER_PATH.'inc/class-render-content.php';
+    }
+
 
     function save_builder_data( $post_id , $post = null , $update = false ){
-
 
         // Check if nonce is valid.
        // if ( ! wp_verify_nonce( $nonce_name, $nonce_action ) ) {
@@ -49,6 +49,7 @@ class Fame_Builder
             return;
         }
 
+        //die( 'can save' );
 
         $data =   isset( $_REQUEST['fame_builder_content'] ) ? $_REQUEST['fame_builder_content'] : '{}';
         if ( is_string( $data ) ) {
@@ -146,6 +147,11 @@ class Fame_Builder
     {
         $items = array();
 
+        $image_sizes = array();
+        foreach ( get_intermediate_image_sizes() as $size ) {
+            $image_sizes[ $size ] = $size;
+        }
+
         $items['text'] = array(
             'id' => 'text',
             'title' => esc_html__('Text', 'texdomain'),
@@ -186,6 +192,13 @@ class Fame_Builder
                     'type' => 'media',
                     'title' => esc_html__('Image', 'texdomain'),
                     //'desc' => __('Desc Here', 'texdomain'),
+                ),
+                array(
+                    'id' => 'size',
+                    'type' => 'select',
+                    'title' => esc_html__('Image size', 'texdomain'),
+                    'options' => $image_sizes,
+                    'default' => 'medium'
                 )
             )
         );
@@ -217,11 +230,12 @@ class Fame_Builder
                 )
             )
         );
-        
+
+        $items = apply_filters( 'fame_builder_items', $items );
 
         // Ensure item is unique
         $new_array = array();
-        foreach ( $items as $item ) {
+        foreach ( ( array ) $items as $item ) {
             $item = wp_parse_args( $item, array(
                 'id' => '',
                 'title' => '',
@@ -238,6 +252,7 @@ class Fame_Builder
                 $item['is_settings'] = true;
             } else {
                 $item['is_settings'] = false;
+                $item['fields'] = array();
             }
 
             $new_array[ $item['id'] ] = $item;
@@ -260,25 +275,46 @@ class Fame_Builder
                     'id' => 'title',
                     'type' => 'text',
                     'title' => esc_html__( 'Title', 'texdomain' ),
+                    'desc' => __( 'Custom section title', 'texdomain' ),
                     'default' => '',
                 ),
                 array(
                     'id' => 'id',
                     'type' => 'text',
                     'title' => esc_html__( 'ID', 'texdomain' ),
-                    'desc' => __( 'Desc id Here', 'texdomain' ),
+                    'desc' => __( 'Custom section ID', 'texdomain' ),
+                    'default' => '',
+                ),
+                array(
+                    'id' => 'class',
+                    'type' => 'text',
+                    'title' => esc_html__( 'Row class', 'texdomain' ),
+                    'desc' => __( 'Custom row class', 'texdomain' ),
                     'default' => '',
                 ),
                 array(
                     'id' => 'columns',
                     'type' => 'select',
                     'title' => esc_html__( 'Columns', 'texdomain' ),
+                    'desc' => __( 'Number column to display', 'texdomain' ),
                     'default' => 1,
                     'options' => $columns
                 ),
+                array(
+                    'id' => 'bgcolor',
+                    'type' => 'color',
+                    'title' => esc_html__( 'Background color', 'texdomain' ),
+                ),
+                array(
+                    'id' => 'desc',
+                    'type' => 'textarea',
+                    'title' => esc_html__( 'Description', 'texdomain' ),
+                    'desc' => __( 'Something about this row', 'texdomain' ),
+                    'default' => '',
+                )
             )
         );
-        return $config;
+        return apply_filters( 'fame_builder_row_config', $config );
     }
 
     static function get_col_config()
@@ -291,19 +327,31 @@ class Fame_Builder
                     'id' => 'id',
                     'type' => 'text',
                     'title' => esc_html__( 'ID', 'texdomain' ),
-                    'desc' => __( 'Desc id Here', 'texdomain' ),
+                    'desc' => __( 'Custom section ID', 'texdomain' ),
                     'default' => '',
                 ),
                 array(
-                    'id' => 'text',
+                    'id' => 'class',
+                    'type' => 'text',
+                    'title' => esc_html__( 'Row class', 'texdomain' ),
+                    'desc' => __( 'Custom row class', 'texdomain' ),
+                    'default' => '',
+                ),
+                array(
+                    'id' => 'bgcolor',
+                    'type' => 'color',
+                    'title' => esc_html__( 'Background color', 'texdomain' ),
+                ),
+                array(
+                    'id' => 'desc',
                     'type' => 'textarea',
-                    'title' => esc_html__( 'Column description', 'texdomain' ),
-                    'desc' => __( 'Desc Here', 'texdomain' ),
-                    'default' => __( 'description value', 'texdomain' ),
+                    'title' => esc_html__( 'Description', 'texdomain' ),
+                    'desc' => __( 'Something about this column', 'texdomain' ),
+                    'default' => '',
                 )
             )
         );
-        return $config;
+        return apply_filters( 'fame_builder_row_config', $config );
     }
 
     function get_defined_templates(  $post_not_in = array() ){
@@ -333,25 +381,9 @@ class Fame_Builder
         return apply_filters( 'fame_builder_get_defined_templates', $templates );
     }
 
-    function builder_interface( $post )
-    {
-        if ( ! self::is_active_builder() ) {
-            return;
-        }
-
-        wp_enqueue_script( 'jquery' );
-        wp_enqueue_script( 'jquery-ui-core' );
-        wp_enqueue_script( 'jquery-ui-sortable' );
-        wp_enqueue_script( 'jquery-ui-resizable' );
-        wp_enqueue_script( 'jquery-ui-draggable' );
-        wp_enqueue_script( 'wp-color-picker' );
-
-        wp_enqueue_media();
-
-        wp_enqueue_script( 'fame-editor', FAME_BUILDER_URL.'admin/assets/js/editor.js', array( 'jquery' ), false, true );
-        wp_enqueue_script( 'fame-builder-items', FAME_BUILDER_URL.'admin/assets/js/builder-items.js', array( 'jquery' ), false, true );
-        wp_enqueue_script( 'fame-builder', FAME_BUILDER_URL.'admin/assets/js/builder.js', array( 'jquery' ), false, true );
-        wp_localize_script( 'fame-builder', 'FAME_BUILDER', array(
+    function get_config(){
+        global $post;
+        $config = array(
             'default_row_col' => 1, // 50%
             'max_columns' => 12,
             'min_columns' => 2, //
@@ -373,9 +405,32 @@ class Fame_Builder
                 'switch_builder' => __( 'Switch to builder', 'textdomain' ),
                 'switch_editor'  => __( 'Switch to editor', 'textdomain' ),
             ),
-        ) );
+        );
+        return apply_filters( 'fame_builder_config', $config );
+    }
+
+    function builder_interface( $post )
+    {
+        if ( ! self::is_active_builder() ) {
+            return;
+        }
+
+        wp_enqueue_script( 'jquery' );
+        wp_enqueue_script( 'jquery-ui-core' );
+        wp_enqueue_script( 'jquery-ui-sortable' );
+        wp_enqueue_script( 'jquery-ui-resizable' );
+        wp_enqueue_script( 'jquery-ui-draggable' );
+        wp_enqueue_script( 'wp-color-picker' );
+
+        wp_enqueue_media();
+
+        wp_enqueue_script( 'fame-editor', FAME_BUILDER_URL.'admin/assets/js/editor.js', array( 'jquery' ), false, true );
+        wp_enqueue_script( 'fame-builder-items', FAME_BUILDER_URL.'admin/assets/js/builder-items.js', array( 'jquery' ), false, true );
+        wp_enqueue_script( 'fame-builder', FAME_BUILDER_URL.'admin/assets/js/builder.js', array( 'jquery' ), false, true );
+        wp_localize_script( 'fame-builder', 'FAME_BUILDER', $this->get_config() );
         include dirname( __FILE__ ).'/admin/interface.php';
     }
 }
 
-new Fame_Builder();
+global $Fame_Builder;
+$Fame_Builder = new Fame_Builder();

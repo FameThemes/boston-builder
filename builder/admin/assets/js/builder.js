@@ -200,7 +200,7 @@ jQuery( document ).ready( function ( $ ) {
         fame_defined_templates,
         builder_area = $( '.fame-builder-area' );
     
-    function getItemControl( item ) {
+    var getItemControl = function ( item ) {
         var item_id = '';
         if ( typeof item === 'string' ) {
             item_id  = item;
@@ -211,9 +211,9 @@ jQuery( document ).ready( function ( $ ) {
             return fame_builder_controls[ item_id ];
         }
         return false;
-    }
+    };
 
-    function itemControlMethod( item, method ){
+    var itemControlMethod = function ( item, method ){
         var c = getItemControl( item );
         if( c ) {
             if ( typeof c[ method ] === "function" ) {
@@ -221,10 +221,10 @@ jQuery( document ).ready( function ( $ ) {
             }
         }
         return false;
-    }
+    };
 
     // Fixed toolbar
-    function setToolbar(){
+    var setToolbar = function (){
         var toolbar = $( '.fame-builder-toolbar', body );
         if ( ! toolbar.parent().hasClass( 'fame-builder-toolbar-wrap' ) ) {
             toolbar.wrap( '<div class="fame-builder-toolbar-wrap"></div>' );
@@ -260,11 +260,11 @@ jQuery( document ).ready( function ( $ ) {
             }
             //toolbar.css( { top: t, left: l, position: 'fixed' });
         } );
-    }
+    };
     setToolbar();
 
     // Builder switching
-    function switch_content_editor( editor_type ){
+    var switch_content_editor = function ( editor_type ){
         // #wp-content-editor-container
         if ( editor_type == 'builder' ) {
             $( '#postdivrich' ).addClass( 'fame-editor-hide' );
@@ -280,7 +280,7 @@ jQuery( document ).ready( function ( $ ) {
         $( '#fame_post_content_type' ).val( editor_type );
         body.trigger( 'fame_editor_changed', [ editor_type ] );
         $( window ).trigger( 'resize' );
-    }
+    };
     $( '.fame-builder' ).removeAttr( 'style' ).removeClass( 'hide' );
 
     switch_content_editor( $( '#fame_post_content_type' ).val() || '' );
@@ -298,7 +298,6 @@ jQuery( document ).ready( function ( $ ) {
 
 
     if ( $( '#page_template' , body ).length > 0 ) {
-
         // Check page builder
         if ( FAME_BUILDER.hide_switcher_if_template ) {
             body.addClass( 'hide_switcher_if_template' );
@@ -325,7 +324,7 @@ jQuery( document ).ready( function ( $ ) {
     }
     
 
-    function get_template( tmpl_id, data ){
+    var get_template = function ( tmpl_id, data ){
         if ( typeof data === "undefined" ) {
             data = {};
         }
@@ -353,10 +352,10 @@ jQuery( document ).ready( function ( $ ) {
         });
 
         return t( tmpl_id,  data );
-    }
+    };
 
 
-    function render_template_by_html( template_html, data ){
+    var render_template_by_html = function ( template_html, data ){
         if ( typeof data === "undefined" ) {
             data = {};
         }
@@ -366,7 +365,6 @@ jQuery( document ).ready( function ( $ ) {
                 data[ key ] = window.switchEditors._wp_Autop( val );
             }
         } );
-
 
         /**
          * Function that loads the Mustache template
@@ -391,9 +389,9 @@ jQuery( document ).ready( function ( $ ) {
         });
 
         return t( );
-    }
+    };
 
-    function get_item_by_id( item_id ){
+    var  get_item_by_id = function( item_id ){
         if ( typeof item_id !== 'string' && typeof item_id !== 'number' ) {
             return false;
         }
@@ -403,22 +401,24 @@ jQuery( document ).ready( function ( $ ) {
         }
 
         return false;
-    }
+    };
 
-    function update_data(){
+    var update_data = function (){
         var save_data = {};
         var content = '';
         // loop rows
         $( '.fame-block-row', builder_area ).each( function( row_index ){
 
+            var r =  $( this );
+            
             content += '<div class="builder-container container">';
             content += '<div class="builder-row row">';
 
-            var r =  $( this );
             save_data[ row_index ] = {
                 settings: {},
                 columns: [],
             };
+
             save_data[ row_index ].settings = r.prop( 'builder_data' );
 
             // loop column
@@ -458,7 +458,6 @@ jQuery( document ).ready( function ( $ ) {
 
         $( '.fame_builder_content', body ).val( JSON.stringify( save_data ) );
 
-
         try {
             var editor = window.tinymce.get( 'content');
             if ( editor ) {
@@ -471,8 +470,7 @@ jQuery( document ).ready( function ( $ ) {
             $( '#content', body ).val( content );
         }
 
-
-    }
+    };
 
     // Sortable rows
     $( ".fame-builder-area", body ).sortable({
@@ -1124,7 +1122,7 @@ jQuery( document ).ready( function ( $ ) {
     // End modal
 
     // Add new column
-    function new_item_object( data ){
+    var new_item_object = function( data ){
         var save_values = _.clone( data );
         save_values = $.extend( {}, {
             _builder_type: 'item',
@@ -1161,13 +1159,13 @@ jQuery( document ).ready( function ( $ ) {
 
         item.prop( 'builder_data', save_values );
         return item;
-    }
+    };
 
     // Add new column
-    function new_column_object( settings ){
+    var new_column_object = function ( settings ){
         settings = $.extend( {}, {
             _builder_type: 'column',
-            _builder_title: '',
+            //_builder_title: '',
             _builder_col: Math.round( FAME_BUILDER.max_columns / FAME_BUILDER.default_row_col ),
         }, settings );
 
@@ -1178,10 +1176,10 @@ jQuery( document ).ready( function ( $ ) {
         c.prop( 'builder_data', settings );
         sort_columns( c );
         return c;
-    }
+    };
 
     // Add new row
-    function new_row_object( settings ){
+    var new_row_object = function ( settings ){
         settings = $.extend( {}, {
             _builder_type: 'row',
             _builder_title: '',
@@ -1192,9 +1190,9 @@ jQuery( document ).ready( function ( $ ) {
         r.prop( 'builder_data', settings );
         sort_columns( r );
         return r;
-    }
+    };
 
-    function add_row_object( data ){
+    var add_row_object = function ( data ){
         data = $.extend( {}, {
             settings: {},
             columns: [],
@@ -1260,7 +1258,7 @@ jQuery( document ).ready( function ( $ ) {
         }
 
         return r;
-    }
+    };
 
     // New row
     body.on( 'click', '.new-row', function( e ){
@@ -1411,7 +1409,7 @@ jQuery( document ).ready( function ( $ ) {
         }
 
         var index = col.index();
-        var num_sib = col.siblings().length;
+        //var num_sib = col.siblings().length;
 
         if ( index == 0 ){ // if current item is first child
             // if current col has next sibling
@@ -1449,7 +1447,6 @@ jQuery( document ).ready( function ( $ ) {
         update_data();
 
     } );
-
 
 
     // Load import template
