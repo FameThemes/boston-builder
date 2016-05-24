@@ -477,7 +477,7 @@ jQuery( document ).ready( function ( $ ) {
     // Sortable rows
     $( ".fame-builder-area", body ).sortable({
         //tolerance: "pointer",
-        handle: '.fame-block-header',
+        handle: '.fame-row-move',
         zIndex: 99999,
         update: function( event, ui ) {
             update_data();
@@ -991,6 +991,11 @@ jQuery( document ).ready( function ( $ ) {
 
         switch ( data._builder_type ) {
             case 'row': // when row settings changed
+
+                if ( data.title ){
+                    item.find( '.fame-block-heading' ).text( data.title );
+                }
+
                 if ( typeof data.columns !== "undefined" ) {
                     var n = string_to_number( data.columns );
                     var bd = $( '.fame-block-body', item );
@@ -1083,7 +1088,16 @@ jQuery( document ).ready( function ( $ ) {
 
         // Update data
         update_data();
+    } );
 
+    // Live update row title
+    body.on( 'keyup', '.fame-block-row .fame-block-heading', function(){
+        var p = $( this ).closest( '.fame-block-row' );
+        var data = p.prop( 'builder_data' );
+        var t = $( this ) .text();
+        data.title = t;
+        p.prop( 'builder_data', data );
+        update_data();
     } );
 
 

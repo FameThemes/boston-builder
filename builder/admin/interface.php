@@ -16,7 +16,7 @@
 
             <div class="fame-builder hide" style="display: none">
                 <div class="fame-builder-toolbar">
-                    <div class="fame-builder-btn new-row" title="Add Rơ">
+                    <div class="fame-builder-btn new-row" title="<?php esc_attr_e( 'New row', 'textdomain' ); ?>">
                         <?php _e( 'New row', 'textdomain' ); ?>
                     </div>
                     <div class="fame-builder-btn fame-import-btn" title="<?php esc_attr( 'Import', 'textdomain' ) ?>">
@@ -42,8 +42,9 @@
     <?php $row_config = Fame_Builder::get_row_config(); ?>
     <div class="fame-block-row">
         <div class="fame-block-header">
-            <div class="fame-block-heading"><?php echo esc_html( $row_config['title'] ); ?><span class="fame-block-name"></span></div>
+            <div class="fame-block-heading" contenteditable="true"><# if ( data.title ) { #> {{ data.title }} <# } else { #> {{ FAME_BUILDER.row.title }}  <# } #></div>
             <div class="block-toolbar fame-toolbar">
+                <div class="fame-row-move fame-move"></div>
                 <div class="fame-row-settings fame-settings"></div>
                 <div class="fame-row-remove fame-remove"></div>
             </div>

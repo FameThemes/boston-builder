@@ -257,6 +257,12 @@ class Fame_Builder
             'preview' => '',
             'fields'=>  array(
                 array(
+                    'id' => 'title',
+                    'type' => 'text',
+                    'title' => esc_html__( 'Title', 'texdomain' ),
+                    'default' => '',
+                ),
+                array(
                     'id' => 'id',
                     'type' => 'text',
                     'title' => esc_html__( 'ID', 'texdomain' ),
