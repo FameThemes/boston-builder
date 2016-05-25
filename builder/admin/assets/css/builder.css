@@ -331,6 +331,9 @@
   cursor: pointer;
   border: 1px solid #dddddd;
   z-index: 15;
+  -webkit-border-radius: 5px;
+  -moz-border-radius: 5px;
+  border-radius: 5px;
 }
 .fame-block-item .fame-item-icon .fame-add-icon {
   width: 100%;

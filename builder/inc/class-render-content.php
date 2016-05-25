@@ -88,8 +88,6 @@ class Fame_Builder_Render_Content {
         ) );
 
         $style = '';
-
-
         $row_html =  apply_filters( 'fame_builder_render_row_tpl', '', $settings, $this );
         $column_html = '';
 
@@ -171,13 +169,13 @@ class Fame_Builder_Render_Content {
                     $settings['bgcolor'] = '';
                 }
             }
-
             $col_args = array (
                 'tag' => 'div',
                 'atts' => array(
                     'class' => array(
                         'builder-col',
                         'col-md-'.$settings['_builder_col'],
+                        'col-sm-12',
                         ( string ) $settings['class']
                     ),
                     'id' => $settings['id'],
@@ -255,8 +253,7 @@ class Fame_Builder_Render_Content {
     }
 
     function load_item_template( $item_id ){
-        // try to find in child theme / theme first first
-
+        // try to find in child theme / theme first
         $item_id = ( string ) $item_id;
         $file = apply_filters( 'fame_builder_load_item_template', false, $item_id );
         if ( ! $file ) {
@@ -264,9 +261,9 @@ class Fame_Builder_Render_Content {
                 'templates/builder/' . $item_id . '.php',
                 'templates-parts/builder/' . $item_id . '.php'
             );
-            $file = locate_template($templates, false, false);
-            if (!$file) {
-                if (file_exists(FAME_BUILDER_PATH . 'templates/' . $item_id . '.php')) {
+            $file = locate_template( $templates, false, false );
+            if ( ! $file ) {
+                if ( file_exists( FAME_BUILDER_PATH . 'templates/' . $item_id . '.php' ) ) {
                     $file = FAME_BUILDER_PATH . 'templates/' . $item_id . '.php';
                 }
             }

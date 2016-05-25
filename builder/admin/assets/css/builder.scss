@@ -374,6 +374,7 @@ $small_desktop:	1140px;
     cursor: pointer;
     border: 1px solid #dddddd;
     z-index: 15;
+    @include border-radius( 5px );
 
     .fame-add-icon {
       width: 100%;

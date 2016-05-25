@@ -410,7 +410,6 @@ jQuery( document ).ready( function ( $ ) {
         $( '.fame-block-row', builder_area ).each( function( row_index ){
 
             var r =  $( this );
-            
             content += '<div class="builder-container container">';
             content += '<div class="builder-row row">';
 
@@ -432,8 +431,8 @@ jQuery( document ).ready( function ( $ ) {
                 column_data.settings = c.prop( 'builder_data' );
                 var items_data = [];
                 var item_html = '';
-                // loop item
 
+                // loop item
                 $( '.block-col-inner .fame-block-item', c ).each( function( item_index ){
                     items_data[ item_index ] =  $( this ).prop( 'builder_data' );
                     var item_content = $( this ).prop( 'builder_content' ) || '';
@@ -444,7 +443,6 @@ jQuery( document ).ready( function ( $ ) {
 
                 column_data.items = items_data;
                 save_data[ row_index ].columns[ column_index ] = column_data;
-
 
                 content += '<div class="builder-col col-md-'+column_data.settings._builder_col+' col-sm-12">';
                 content += item_html;
@@ -540,7 +538,6 @@ jQuery( document ).ready( function ( $ ) {
             $( this ).closest( '.fame-block-row ' ).remove();
             update_data();
         }
-
     } );
 
 
@@ -1523,9 +1520,7 @@ jQuery( document ).ready( function ( $ ) {
         $( '.fame-builder-area', body ).append( r );
     } );
 
-
-
-   // $( '.fame-add' ).eq( 0 ).trigger( 'click' );
+    // $( '.fame-add' ).eq( 0 ).trigger( 'click' );
 
 
 } );
