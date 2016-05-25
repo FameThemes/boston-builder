@@ -6,8 +6,6 @@ class Fame_Builder_Render_Content {
     {
         $this->items = Fame_Builder::get_items_config();
         add_filter( 'the_content', array( $this, 'filter_post_content' ), 1 );
-
-
         add_action( 'wp_enqueue_scripts', array( $this, 'scripts' ) );
     }
 
@@ -49,6 +47,7 @@ class Fame_Builder_Render_Content {
             foreach ( ( array ) $args['atts'] as $k => $v ) {
                 if ( $v ) {
                     if (is_array($v)) {
+                        $v = array_filter( $v );
                         $v = join(" ", $v);
                     }
                     $atts[ $k ] = sanitize_title($k) . '="' . esc_attr($v) . '"';
@@ -79,7 +78,7 @@ class Fame_Builder_Render_Content {
             'columns' => array(),
         ) );
 
-        $row['settings'] = wp_parse_args( $row['settings'], array(
+        $settings = wp_parse_args( $row['settings'], array(
             '_builder_type' => 'row',
             'title' => '',
             'id' => '',
@@ -88,40 +87,60 @@ class Fame_Builder_Render_Content {
             'desc' => '',
         ) );
 
-        $row_wrapper_args = array (
-            'tag' => 'div',
-            'atts' => array(
-                'class' => array(
-                    'builder-container', 'container'
-                ),
-            ),
-        );
-        $row_args = array (
-            'tag' => 'div',
-            'atts' => array(
-                'class' => array(
-                    'builder-row', 'row'
-                ),
-            ),
-        );
+        $style = '';
 
-        $row_html = '';
 
-        $row_html .= $this->render_html_open_tag( $row_wrapper_args );
-        $row_html .= $this->render_html_open_tag( $row_args );
+        $row_html =  apply_filters( 'fame_builder_render_row_tpl', '', $settings, $this );
+        $column_html = '';
 
-            if ( ! empty( $row['columns'] ) ) {
-                foreach ( ( array ) $row['columns'] as $c_index => $column ) {
-                    $row_html .= $this->render_column( $column );
+        if ( ! $row_html ) {
+
+            if ( $settings['bgcolor'] != '' ) {
+                if ( preg_match('|^#([A-Fa-f0-9]{3}){1,2}$|', $settings['bgcolor'] ) ) {
+                    $style = 'background-color: '.$settings['bgcolor'].';';
+                } else {
+                    $settings['bgcolor'] = '';
                 }
             }
 
-        $row_html .= $this->render_html_close_tag( $row_args );
-        $row_html .= $this->render_html_close_tag( $row_wrapper_args );
+            $row_wrapper_args = array (
+                'tag' => 'div',
+                'atts' => array(
+                    'class' => array(
+                        'builder-container', 'container',
+                        ( string ) $settings['class']
+                    ),
+                    'style' => $style,
+                    'id' => $settings['id']
+                ),
+            );
+            $row_args = array (
+                'tag' => 'div',
+                'atts' => array(
+                    'class' => array(
+                        'builder-row', 'row'
+                    ),
+                ),
+            );
+
+            $row_wrapper_args = apply_filters('fame_builder_render_row_wrapper_args', $row_wrapper_args, $settings );
+            $row_args = apply_filters('fame_builder_render_row_args', $row_args, $settings);
+
+            $row_html .= $this->render_html_open_tag( $row_wrapper_args );
+            $row_html .= $this->render_html_open_tag( $row_args );
+            $row_html .= '{{columns}}';
+            $row_html .= $this->render_html_close_tag( $row_args );
+            $row_html .= $this->render_html_close_tag( $row_wrapper_args );
+        }
 
 
+        if ( ! empty( $row['columns'] ) ) {
+            foreach ( ( array ) $row['columns'] as $c_index => $column ) {
+                $column_html .= $this->render_column( $column );
+            }
+        }
 
-        return $row_html;
+        return str_replace( '{{columns}}', $column_html, $row_html );
     }
 
     function render_column( $column ){
@@ -140,37 +159,43 @@ class Fame_Builder_Render_Content {
             'desc' => '',
         ) );
 
-        $style = '';
-        if ( $settings['bgcolor'] != '' ) {
-            if ( preg_match('|^#([A-Fa-f0-9]{3}){1,2}$|', $settings['bgcolor'] ) ) {
-                $style = 'background-color: '.$settings['bgcolor'].';';
-            } else {
-                $settings['bgcolor'] = '';
+        $items_html = '';
+        $column_html = apply_filters( 'fame_builder_render_column_tpl', '', $settings, $this );
+
+        if ( ! $column_html ) {
+            $style = '';
+            if ( $settings['bgcolor'] != '' ) {
+                if ( preg_match('|^#([A-Fa-f0-9]{3}){1,2}$|', $settings['bgcolor'] ) ) {
+                    $style = 'background-color: '.$settings['bgcolor'].';';
+                } else {
+                    $settings['bgcolor'] = '';
+                }
             }
+
+            $col_args = array (
+                'tag' => 'div',
+                'atts' => array(
+                    'class' => array(
+                        'builder-col',
+                        'col-md-'.$settings['_builder_col'],
+                        ( string ) $settings['class']
+                    ),
+                    'id' => $settings['id'],
+                    'style' => $style
+                ),
+            );
+
+            $col_args = apply_filters('fame_builder_render_row_args', $col_args, $settings, $this );
+            $column_html .= $this->render_html_open_tag( $col_args );
+            $column_html .= '{{items}}';
+            $column_html .= $this->render_html_close_tag( $col_args );
         }
 
-        $col_args = array (
-            'tag' => 'div',
-            'atts' => array(
-                'class' => array(
-                    'builder-col',
-                    'col-md-'.$settings['_builder_col'],
-                    ( string ) $settings['class']
-                ),
-                'id' => $settings['id'],
-                'style' => $style
-            ),
-        );
+        foreach ( ( array ) $column['items'] as $item_index => $item ) {
+            $items_html .= $this->render_item( $item );
+        }
 
-
-
-        $column_html = '';
-        $column_html .= $this->render_html_open_tag( $col_args );
-            foreach ( ( array ) $column['items'] as $item_index => $item ) {
-                $column_html .= $this->render_item( $item );
-            }
-        $column_html .= $this->render_html_close_tag( $col_args );
-        return $column_html;
+        return  str_replace( '{{items}}', $items_html, $column_html );
     }
 
     function render_item( $item ){
@@ -192,18 +217,22 @@ class Fame_Builder_Render_Content {
             include $file;
             $html = ob_get_clean();
         }
-
-        $item_args = array (
-            'tag' => 'div',
-            'atts' => array(
-                'class' => array(
-                    'builder-item',
-                    'builder-item-'.$item['_builder_id']
+        $item_wrap = apply_filters( 'fame_builder_render_item_content', '', $item, $this );
+        if ( ! $item_wrap ) {
+            $item_args = array(
+                'tag' => 'div',
+                'atts' => array(
+                    'class' => array(
+                        'builder-item',
+                        'builder-item-' . $item['_builder_id']
+                    ),
                 ),
-            ),
-        );
-   
-        return $this->render_html_open_tag( $item_args ).$html.$this->render_html_close_tag( $item_args );;
+            );
+            $item_args = apply_filters('fame_builder_render_item_args', $item_args, $item, $this );
+            $item_wrap = $this->render_html_open_tag($item_args) . '{{item_content}}' . $this->render_html_close_tag($item_args);
+        }
+
+        return  str_replace( '{{item_content}}', $html, $item_wrap );
     }
 
     function get_item_by_id( $item_id ){

@@ -18,6 +18,13 @@
   float: left;
 }
 
+.builder-item {
+  margin-bottom: 15px;
+}
+.builder-item:last-child {
+  margin-bottom: 0px;
+}
+
 .col-md-1 {
   width: 8.33333%;
 }

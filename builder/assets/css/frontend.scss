@@ -15,8 +15,15 @@
     padding-right: 15px;
     float: left;
   }
-
 }
+.builder-item {
+  margin-bottom: 15px;
+  &:last-child {
+    margin-bottom: 0px;
+  }
+}
+
+
 @for $i from 1 through 12 {
   .col-md-#{$i}{
     width: percentage(  $i / 12 );
